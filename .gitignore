@@ -1,0 +1,16 @@
+# runtime progress store
+data/
+
+# python
+__pycache__/
+*.pyc
+
+# node / capacitor (only present after `npx cap add android`)
+node_modules/
+android/
+ios/
+package-lock.json
+
+# os/editor cruft
+.DS_Store
+*.swp

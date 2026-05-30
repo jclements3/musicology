@@ -1,0 +1,11 @@
+{
+  "appId": "com.musicology.rntrainer",
+  "appName": "RN Trainer",
+  "webDir": "web",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

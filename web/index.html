@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1226" />
+  <title>Roman Numeral Chord Trainer</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <div class="brand">
+        <span class="logo">&#9835;</span>
+        <span class="title">Roman Numeral Trainer</span>
+      </div>
+      <div class="hud">
+        <div class="hud-item level">
+          <span class="lvl-badge" id="levelBadge">1</span>
+          <div class="xpwrap"><div class="xpbar" id="xpBar"></div></div>
+        </div>
+        <div class="hud-item"><span class="hud-label">Streak</span><span class="hud-val" id="streakVal">0</span></div>
+        <div class="hud-item"><span class="hud-label">Score</span><span class="hud-val" id="scoreVal">0</span></div>
+        <div class="hud-item"><span class="hud-label">Acc</span><span class="hud-val" id="accVal">&#8211;</span></div>
+        <button class="icon-btn" id="statsBtn" title="Stats">&#128202;</button>
+        <button class="icon-btn" id="settingsBtn" title="Settings">&#9881;&#65038;</button>
+      </div>
+    </header>
+
+    <nav id="modes">
+      <button class="mode-tab active" data-mode="identify">Identify &nbsp;<small>chord &#8594; roman</small></button>
+      <button class="mode-tab" data-mode="build">Build &nbsp;<small>roman &#8594; chord</small></button>
+    </nav>
+
+    <main id="stage">
+      <div id="prompt">
+        <div class="key-chip" id="keyChip">Key</div>
+        <div class="prompt-text" id="promptText">Tap Start</div>
+      </div>
+
+      <section id="visual">
+        <canvas id="keyboard"></canvas>
+        <div class="chord-row">
+          <div class="chord-notes" id="chordNotes"></div>
+          <button class="play-btn" id="playBtn" title="Play chord">&#9654; Play</button>
+        </div>
+      </section>
+
+      <section id="answers"></section>
+
+      <div id="feedback"></div>
+    </main>
+
+    <footer id="bottombar">
+      <div class="stat"><span id="sessAnswered">0</span> answered</div>
+      <div class="stat">best streak <span id="bestStreak">0</span></div>
+      <div class="stat">avg <span id="avgTime">&#8211;</span></div>
+      <button class="ghost-btn" id="startBtn">Start</button>
+    </footer>
+  </div>
+
+  <!-- Settings drawer -->
+  <div class="overlay hidden" id="settingsOverlay">
+    <div class="drawer">
+      <h2>Settings</h2>
+      <div class="setting"><label><input type="checkbox" id="optMajor" checked /> Major keys</label></div>
+      <div class="setting"><label><input type="checkbox" id="optMinor" /> Minor keys</label></div>
+      <div class="setting"><label><input type="checkbox" id="optHarm" /> Harmonic minor (V, vii&#176;)</label></div>
+      <div class="setting"><label><input type="checkbox" id="optSeventh" /> Seventh chords</label></div>
+      <div class="setting"><label><input type="checkbox" id="optSound" checked /> Play sound on reveal</label></div>
+      <hr />
+      <button class="ghost-btn" id="syncBtn">Sync progress to server</button>
+      <button class="danger-btn" id="resetBtn">Reset all progress</button>
+      <button class="close-btn" id="closeSettings">Close</button>
+    </div>
+  </div>
+
+  <!-- Stats drawer -->
+  <div class="overlay hidden" id="statsOverlay">
+    <div class="drawer">
+      <h2>Progress &amp; Mastery</h2>
+      <div class="totals" id="totalsBox"></div>
+      <h3>Per roman numeral</h3>
+      <div class="mastery" id="masteryBox"></div>
+      <button class="close-btn" id="closeStats">Close</button>
+    </div>
+  </div>
+
+  <script src="theory.js"></script>
+  <script src="audio.js"></script>
+  <script src="keyboard.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
