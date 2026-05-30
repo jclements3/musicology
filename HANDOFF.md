@@ -78,21 +78,31 @@ Android resources (those live under the gitignored `android/`).
   "Piano" nav link; pointed the manifest/title/colors at the harp.
 - Renamed the app to **Harp Trainer** (`capacitor.config.json`, manifest).
 - Added the music-notes launcher icon + reproducible `apply_icons()` build step.
-- **Harp UI fix:** the lit-note circles were overlapping. They're now staggered
-  vertically by chord position (`web/harp.js`, `drawHarp`: `STAGGER = 38`, a step
-  larger than the 30px circle diameter, applied along the natural string-length
-  diagonal). Also **removed the finger numbers** and their toolbar toggle.
+- **Lit-note circles fix:** they were overlapping. Now staggered vertically by
+  chord position (`web/harp.js`, `drawHarp`: `STAGGER = 38`, a step larger than the
+  30px circle diameter, applied along the natural string-length diagonal). Also
+  **removed the finger numbers** and their toolbar toggle.
+- **Rewrote `README.md`** for the harp (was still describing the deleted piano).
+- **Bigger answer-grid fonts:** the 9x7 Roman-numeral matrix was small. Bumped
+  `.ans` to 38px (28px under the `<=1280px` breakpoint) and trimmed cell padding to
+  `0 1px`. Verified on the tablet that the widest labels still fit their columns.
+- **Bold Roman numerals:** `romanHTML` now bolds only the leading numeral letters
+  (`I/V/i/v`) via a `.num` span; quality qualifiers (`° Δ ø q`) and figured bass
+  stay regular weight.
+- **Pedal board now matches a real concert harp:** laid out in foot order
+  `D C B | E F G A` with a center divider (`.pedalgap`) between the feet (was scale
+  order `C D E F G A B`), and the notches run **flat (top) / natural (middle) /
+  sharp (bottom)** (they were inverted). Canonical layout was verified against harp
+  references.
 
 ## Known TODOs / loose ends
 
-1. **`README.md` still describes the piano** ("Roman Numeral Chord Trainer", piano
-   keyboard, identify/build modes). It's now inaccurate — rewrite for the harp.
-2. **Internal app id is still `com.musicology.rntrainer`** (user-visible label is
+1. **Internal app id is still `com.musicology.rntrainer`** (user-visible label is
    correct: "Harp Trainer"). Renaming to `com.musicology.harptrainer` needs a clean
    rescaffold (`--clean`) after editing `appId` in `capacitor.config.json`, and would
    install as a *separate* app — uninstall the old one:
    `adb uninstall com.musicology.rntrainer`.
-3. **Release signing:** only a debug APK exists. `--release` makes an *unsigned*
+2. **Release signing:** only a debug APK exists. `--release` makes an *unsigned*
    release APK; sign it before any Play Store path. Not needed for personal use.
 
 ## Repo layout
@@ -100,7 +110,7 @@ Android resources (those live under the gitignored `android/`).
 ```
 musicology/
 ├── HANDOFF.md               # this file
-├── README.md                # (still piano-centric — see TODO #1)
+├── README.md                # harp trainer docs (build, theory coverage, layout)
 ├── build-apk.sh             # Capacitor build + USB install + apply_icons()
 ├── capacitor.config.json    # appName "Harp Trainer", appId com.musicology.rntrainer
 ├── package.json             # pins @capacitor/*@^7
