@@ -295,6 +295,9 @@
     // top soundboard bar
     svg += '<rect x="' + (marginX - 18) + '" y="' + (topY - 16) + '" width="' + (W - 2 * marginX + 36) + '" height="12" rx="6" fill="#7a5a36"/>';
 
+    // Note circles/labels collect here and are appended AFTER every string so a
+    // later string's line never paints over an earlier string's circle.
+    let overlay = '';
     STRINGS.forEach((s, i) => {
       const x = marginX + i * gap;
       const len = lenTreble + (lenBass - lenTreble) * (1 - i / (n - 1));
@@ -314,9 +317,9 @@
         const R = 20;        // green note-circle radius (enlarged for legibility)
         const STAGGER = 46;  // > circle diameter (2*R=40) => guaranteed no overlap
         const my = topY + len * 0.5 - (on.order - (on.total - 1) / 2) * STAGGER;
-        svg += '<circle cx="' + x + '" cy="' + my + '" r="' + R + '" fill="#16a34a" stroke="#0b3d20" stroke-width="2.5"/>';
+        overlay += '<circle cx="' + x + '" cy="' + my + '" r="' + R + '" fill="#16a34a" stroke="#0b3d20" stroke-width="2.5"/>';
         if (settings.names) {
-          svg += '<text x="' + x + '" y="' + (my + 6) + '" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">' +
+          overlay += '<text x="' + x + '" y="' + (my + 6) + '" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">' +
                  fix(on.note.letter + on.note.acc) + '</text>';
         }
       }
@@ -325,6 +328,7 @@
         svg += '<text x="' + x + '" y="' + (y2 + 16) + '" text-anchor="middle" font-size="11" fill="#8a6a44">C' + s.octave + '</text>';
       }
     });
+    svg += overlay; // note circles + labels on top of all strings
     svg += '</svg>';
     // Render only into the string layer so the pedal overlay (#pedalbox) survives.
     let layer = document.getElementById('stringlayer');
