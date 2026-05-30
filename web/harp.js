@@ -284,7 +284,9 @@
     const marginX = 46, topY = 26, botPad = 70;
     const n = STRINGS.length;
     const gap = (W - 2 * marginX) / (n - 1);
-    const lenBass = H - topY - botPad, lenTreble = lenBass * 0.46;
+    // 0.90 = shorten all strings ~10% so their bottom ends clear the (enlarged)
+    // pedal/lever widget overlaid in the lower-right of the canvas.
+    const lenBass = (H - topY - botPad) * 0.90, lenTreble = lenBass * 0.46;
 
     const hi = {};
     (highlight || []).forEach((h, i) => { hi[h.sidx] = { note: h, order: i, total: highlight.length }; });
@@ -300,7 +302,7 @@
       const isC = s.letter === 'C', isF = s.letter === 'F';
       const baseColor = isC ? '#d23b3b' : isF ? '#3b6fd2' : '#1b1b1b';
       const on = hi[s.idx];
-      const w = on ? 5 : (isC || isF ? 2.4 : 1.6);
+      const w = on ? 6 : (isC || isF ? 2.6 : 1.8);
       const col = on ? '#16a34a' : baseColor;
       svg += '<line x1="' + x + '" y1="' + topY + '" x2="' + x + '" y2="' + y2 +
              '" stroke="' + col + '" stroke-width="' + w + '" stroke-linecap="round"/>';
@@ -309,11 +311,12 @@
         // circles never overlap, even when the lit strings sit close together.
         // Notes run bass->treble (left->right); subtracting the order term pushes
         // higher notes up, reinforcing the natural string-length diagonal.
-        const STAGGER = 38; // > circle diameter (2*r=30) => guaranteed no overlap
+        const R = 20;        // green note-circle radius (enlarged for legibility)
+        const STAGGER = 46;  // > circle diameter (2*R=40) => guaranteed no overlap
         const my = topY + len * 0.5 - (on.order - (on.total - 1) / 2) * STAGGER;
-        svg += '<circle cx="' + x + '" cy="' + my + '" r="15" fill="#16a34a" stroke="#0b3d20" stroke-width="2"/>';
+        svg += '<circle cx="' + x + '" cy="' + my + '" r="' + R + '" fill="#16a34a" stroke="#0b3d20" stroke-width="2.5"/>';
         if (settings.names) {
-          svg += '<text x="' + x + '" y="' + (my + 4) + '" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">' +
+          svg += '<text x="' + x + '" y="' + (my + 6) + '" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">' +
                  fix(on.note.letter + on.note.acc) + '</text>';
         }
       }
@@ -344,6 +347,19 @@
     const rows = SHAPE_ROWS.filter((s) => enabledShapes().includes(s));
     const box = $('answers');
     box.innerHTML = '';
+
+    // Church-mode header: each column is a scale degree (1..7), which names a
+    // mode of the major scale -- Ionian, Dorian, ... Locrian.
+    const MODES = ['Ion', 'Dor', 'Phr', 'Lyd', 'Mix', 'Aeo', 'Loc'];
+    const head = document.createElement('div');
+    head.className = 'matrix-head';
+    MODES.forEach((m) => {
+      const c = document.createElement('div');
+      c.className = 'mhead';
+      c.textContent = m;
+      head.appendChild(c);
+    });
+    box.appendChild(head);
 
     const table = document.createElement('div');
     table.className = 'matrix';
