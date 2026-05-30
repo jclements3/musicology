@@ -138,10 +138,16 @@
       else if (ch === '⁄') { /* fraction slash: just a separator */ }
       else prefix += ch;
     }
-    if (!top && !bot) return prefix;
+    // Bold only the Roman-numeral letters; the qualifiers that follow them
+    // (° dim, Δ maj7, ø half-dim, q/q4 quartal) and the figured bass stay
+    // regular weight. The numeral is always the leading I/V/i/v run.
+    const m = prefix.match(/^[IiVv]+/);
+    const numeral = m ? m[0] : '';
+    const head = (numeral ? '<b class="num">' + numeral + '</b>' : '') + prefix.slice(numeral.length);
+    if (!top && !bot) return head;
     const fig = '<span class="fig">' + (top ? '<span>' + top + '</span>' : '') +
       (bot ? '<span>' + bot + '</span>' : '') + '</span>';
-    return prefix + fig;
+    return head + fig;
   }
 
   // ---------------- progress / metrics ----------------
@@ -250,15 +256,21 @@
     $('keyLabel').textContent = 'Key of ' + fix(keyName);
     const wrap = $('pedals');
     wrap.innerHTML = '';
-    LO.forEach((letter) => {
+    // Concert pedal-harp layout: left foot D C B | right foot E F G A.
+    const PEDAL_ORDER = ['D', 'C', 'B', 'E', 'F', 'G', 'A'];
+    PEDAL_ORDER.forEach((letter) => {
+      // divider between the left-foot (D C B) and right-foot (E F G A) groups
+      if (letter === 'E') wrap.appendChild(Object.assign(document.createElement('div'), { className: 'pedalgap' }));
       const acc = byLetter[letter] || '';
       const pos = acc.includes('#') ? 'sharp' : acc.includes('b') ? 'flat' : 'nat';
       const cell = document.createElement('div');
       cell.className = 'pedal' + (letter === 'C' ? ' isC' : letter === 'F' ? ' isF' : '');
+      // notch positions match a real pedal harp: flat (top), natural (middle),
+      // sharp (bottom) -- top notch lengthens the string, bottom shortens it.
       cell.innerHTML =
-        '<div class="slot ' + (pos === 'sharp' ? 'on' : '') + '">♯</div>' +
-        '<div class="slot ' + (pos === 'nat' ? 'on' : '') + '">♮</div>' +
         '<div class="slot ' + (pos === 'flat' ? 'on' : '') + '">♭</div>' +
+        '<div class="slot ' + (pos === 'nat' ? 'on' : '') + '">♮</div>' +
+        '<div class="slot ' + (pos === 'sharp' ? 'on' : '') + '">♯</div>' +
         '<div class="pname">' + letter + '</div>';
       wrap.appendChild(cell);
     });
