@@ -3,97 +3,166 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#0f1226" />
-  <title>Roman Numeral Chord Trainer</title>
-  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#2a1f14" />
+  <title>Harp Shape-Chord Trainer</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root{
+      --bg:#2a1f14; --panel:#f3ead7; --ink:#2a2017; --rule:#c9b48d;
+      --red:#d23b3b; --blue:#3b6fd2; --green:#16a34a; --gold:#e0a82e;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);
+      color:#f3ead7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none;}
+    #app{display:grid;grid-template-rows:auto 1fr auto;height:100vh;width:100vw;}
+
+    /* ---- single top bar: brand · nav · key · filters · pedals · metrics ---- */
+    #topbar{display:flex;align-items:center;gap:14px;padding:6px 16px;background:#1f160d;
+      border-bottom:1px solid #4a3a26;flex-wrap:nowrap;overflow-x:auto;}
+    .brand{display:flex;align-items:center;gap:7px;font-size:16px;font-weight:700;white-space:nowrap;}
+    .brand .logo{color:var(--gold);font-size:22px;}
+    .navlink{color:var(--gold);text-decoration:none;font-size:13px;border:1px solid #6a5836;padding:6px 10px;border-radius:8px;white-space:nowrap;}
+    .sep{width:1px;align-self:stretch;background:#4a3a26;margin:0 2px;}
+
+    .grp{display:flex;align-items:center;gap:9px;white-space:nowrap;}
+    .grp.filters label{display:flex;align-items:center;gap:4px;color:#e9dcc0;font-size:13px;}
+    .grp.filters input[type=checkbox]{width:16px;height:16px;}
+    select{font:inherit;font-size:13px;padding:5px 8px;border-radius:7px;border:1px solid #6a5836;background:#f3ead7;color:#2a2017;}
+    .keyname{font-weight:700;color:var(--gold);font-size:14px;white-space:nowrap;}
+
+    /* pedal / lever board — overlaid in the empty lower-right of the string canvas */
+    #pedalbox{position:absolute;right:14px;bottom:12px;background:rgba(243,234,215,0.94);
+      border:1px solid var(--rule);border-radius:9px;padding:6px 8px 7px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.18);}
+    #pedalbox .pedaltitle{font-size:10px;text-transform:uppercase;letter-spacing:.6px;
+      color:#8a734a;font-weight:700;text-align:center;margin-bottom:4px;}
+    #pedals{display:flex;gap:4px;}
+    .pedal{background:#fffaf0;border:1px solid var(--rule);border-radius:6px;width:30px;
+      text-align:center;color:#2a2017;padding:1px 0 0;line-height:1;}
+    .pedal .slot{font-size:11px;line-height:1.05;color:#c4b48f;}
+    .pedal .slot.on{color:#2a2017;font-weight:800;background:#ffe1a0;border-radius:3px;}
+    .pedal .pname{font-weight:800;font-size:12px;padding-bottom:1px;}
+    .pedal.isC .pname{color:var(--red);} .pedal.isF .pname{color:var(--blue);}
+
+    .hud{display:flex;align-items:center;gap:14px;margin-left:auto;}
+    .hud .it{display:flex;flex-direction:column;align-items:center;min-width:40px;}
+    .hud .lab{font-size:10px;color:#b9a47e;text-transform:uppercase;letter-spacing:.4px;}
+    .hud .val{font-size:18px;font-weight:700;}
+    .iconbtn{background:transparent;color:#e9dcc0;border:1px solid #6a5836;border-radius:8px;
+      padding:6px 10px;font-size:12px;cursor:pointer;white-space:nowrap;}
+
+    /* ---- main: answers (left) · harp strings (right) ---- */
+    main{display:grid;grid-template-columns:minmax(460px,1fr) 1fr;gap:14px;
+      padding:12px 16px;overflow:hidden;min-height:0;}
+
+    .left{display:flex;flex-direction:column;gap:8px;min-height:0;}
+    .qtext{font-size:16px;font-weight:700;line-height:1.2;}
+    #answers{flex:1;min-height:0;display:flex;}
+
+    /* the 9×7 chord matrix — clean grid, Georgia serif, alternating stripes */
+    .matrix{flex:1;display:grid;width:100%;grid-auto-rows:1fr;min-height:0;
+      font-family:Georgia,"Times New Roman",serif;
+      border:1px solid var(--rule);border-radius:10px;overflow:hidden;background:#fbfaf6;}
+    .ans{font-size:22px;font-weight:400;background:#fbfaf6;color:#2a2017;
+      border:none;cursor:pointer;transition:background .12s;
+      display:flex;align-items:center;justify-content:center;min-height:0;padding:0 2px;}
+    .ans.odd{background:#f0efe9;}              /* alternating row stripe, per your table */
+    .ans:active{transform:scale(.97);}
+    .ans:hover:not(:disabled){background:#ffe9a8;}
+    .ans.correct{background:var(--green)!important;color:#fff;}
+    .ans.wrong{background:var(--red)!important;color:#fff;}
+    /* stacked figured bass: 6-over-4 etc. (your .fig) */
+    .fig{display:inline-flex;flex-direction:column;align-items:center;
+      font-size:0.5em;line-height:0.85;vertical-align:0.28em;margin-left:0.05em;}
+    /* learning hint — fades out as the player levels up */
+    #hint{min-height:0;font-size:14px;line-height:1.35;color:#d9c79f;text-align:center;
+      background:rgba(224,168,46,0.10);border:1px solid rgba(224,168,46,0.35);
+      border-radius:9px;padding:0;max-height:0;opacity:0;overflow:hidden;
+      transition:max-height .25s,opacity .25s,padding .25s;}
+    #hint.show{max-height:120px;opacity:1;padding:7px 12px;}
+    #hint b{color:var(--gold);} #hint .k{color:#9fd0ff;font-weight:700;}
+    #hint .step{color:#b9a47e;}
+    .feedback{min-height:24px;font-size:19px;font-weight:700;text-align:center;}
+    .feedback.ok{color:#7ee29a;} .feedback.bad{color:#ff9aa4;}
+    #reveal{min-height:34px;text-align:center;font-size:14px;color:#e9dcc0;}
+    #reveal b{color:var(--gold);} .muted{color:#b9a47e;}
+
+    .right{display:flex;flex-direction:column;min-height:0;}
+    #harp{position:relative;flex:1;background:var(--panel);border-radius:12px;border:1px solid var(--rule);
+      box-shadow:inset 0 0 0 1px #fff7e6;min-height:0;overflow:hidden;}
+    #stringlayer{position:absolute;inset:0;}
+    #harp svg{display:block;width:100%;height:100%;}
+
+    footer{display:flex;align-items:center;gap:12px;padding:7px 16px;background:#1f160d;border-top:1px solid #4a3a26;}
+    footer .stat{font-size:13px;color:#b9a47e;}
+    footer .stat b{color:#f3ead7;}
+    .btn{background:var(--gold);color:#2a1f14;border:none;padding:10px 20px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;}
+    .btn.ghost{background:transparent;color:#e9dcc0;border:1px solid #6a5836;}
+    .spacer{margin-left:auto;}
+
+    @media (max-width:1280px){
+      main{grid-template-columns:minmax(440px,1.3fr) 1fr;}
+      .ans{font-size:15px;}
+      .mcell.rowlab{font-size:13px;}
+    }
+  </style>
 </head>
 <body>
   <div id="app">
-    <header id="topbar">
-      <div class="brand">
-        <span class="logo">&#9835;</span>
-        <span class="title">Roman Numeral Trainer</span>
+    <div id="topbar">
+      <div class="brand"><span class="logo">⌇</span> Harp Shape-Chords</div>
+      <div class="sep"></div>
+      <div class="grp">
+        <span class="keyname" id="keyLabel">Key</span>
+        <select id="keySel"><option value="random">Random key</option></select>
       </div>
+      <div class="sep"></div>
+      <div class="grp filters">
+        <label><input type="checkbox" id="optTri" /> Triads</label>
+        <label><input type="checkbox" id="optSev" /> 7ths</label>
+        <label><input type="checkbox" id="optQ" /> Quartal</label>
+        <label><input type="checkbox" id="optNames" /> Names</label>
+        <label><input type="checkbox" id="optSound" /> Sound</label>
+      </div>
+      <div class="sep"></div>
       <div class="hud">
-        <div class="hud-item level">
-          <span class="lvl-badge" id="levelBadge">1</span>
-          <div class="xpwrap"><div class="xpbar" id="xpBar"></div></div>
-        </div>
-        <div class="hud-item"><span class="hud-label">Streak</span><span class="hud-val" id="streakVal">0</span></div>
-        <div class="hud-item"><span class="hud-label">Score</span><span class="hud-val" id="scoreVal">0</span></div>
-        <div class="hud-item"><span class="hud-label">Acc</span><span class="hud-val" id="accVal">&#8211;</span></div>
-        <button class="icon-btn" id="statsBtn" title="Stats">&#128202;</button>
-        <button class="icon-btn" id="settingsBtn" title="Settings">&#9881;&#65038;</button>
+        <div class="it"><span class="lab">Lvl</span><span class="val" id="lvl">1</span></div>
+        <div class="it"><span class="lab">Streak</span><span class="val" id="streak">0</span></div>
+        <div class="it"><span class="lab">Score</span><span class="val" id="score">0</span></div>
+        <div class="it"><span class="lab">Acc</span><span class="val" id="acc">–</span></div>
       </div>
-    </header>
+      <button class="iconbtn" id="reset" title="Reset harp progress">Reset</button>
+    </div>
 
-    <nav id="modes">
-      <button class="mode-tab active" data-mode="identify">Identify &nbsp;<small>chord &#8594; roman</small></button>
-      <button class="mode-tab" data-mode="build">Build &nbsp;<small>roman &#8594; chord</small></button>
-      <a class="mode-tab harp-link" href="harp.html">&#9095; Harp strings &nbsp;<small>shape-chords</small></a>
-    </nav>
-
-    <main id="stage">
-      <div id="prompt">
-        <div class="key-chip" id="keyChip">Key</div>
-        <div class="prompt-text" id="promptText">Tap Start</div>
+    <main>
+      <div class="left">
+        <div class="qtext">Which Roman-numeral chord is lit on the harp?</div>
+        <div id="answers"></div>
+        <div id="hint"></div>
+        <div class="feedback" id="feedback"></div>
+        <div id="reveal"></div>
       </div>
-
-      <section id="visual">
-        <canvas id="keyboard"></canvas>
-        <div class="chord-row">
-          <div class="chord-notes" id="chordNotes"></div>
-          <button class="play-btn" id="playBtn" title="Play chord">&#9654; Play</button>
+      <div class="right">
+        <div id="harp"><div id="stringlayer"></div>
+          <div id="pedalbox" title="Pedal / lever positions for this key">
+            <div class="pedaltitle">Pedals / Levers</div>
+            <div id="pedals"></div>
+          </div>
         </div>
-      </section>
-
-      <section id="answers"></section>
-
-      <div id="feedback"></div>
+      </div>
     </main>
 
-    <footer id="bottombar">
-      <div class="stat"><span id="sessAnswered">0</span> answered</div>
-      <div class="stat">best streak <span id="bestStreak">0</span></div>
-      <div class="stat">avg <span id="avgTime">&#8211;</span></div>
-      <button class="ghost-btn" id="startBtn">Start</button>
+    <footer>
+      <span class="stat"><b id="answered">0</b> answered</span>
+      <span class="stat">best streak <b id="best">0</b></span>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="play">▶ Play chord</button>
+      <button class="btn" id="skip">Skip / Next</button>
     </footer>
   </div>
 
-  <!-- Settings drawer -->
-  <div class="overlay hidden" id="settingsOverlay">
-    <div class="drawer">
-      <h2>Settings</h2>
-      <div class="setting"><label><input type="checkbox" id="optMajor" checked /> Major keys</label></div>
-      <div class="setting"><label><input type="checkbox" id="optMinor" /> Minor keys</label></div>
-      <div class="setting"><label><input type="checkbox" id="optHarm" /> Harmonic minor (V, vii&#176;)</label></div>
-      <div class="setting"><label><input type="checkbox" id="optSeventh" /> Seventh chords</label></div>
-      <div class="setting"><label><input type="checkbox" id="optSound" checked /> Play sound on reveal</label></div>
-      <hr />
-      <button class="ghost-btn" id="syncBtn">Sync progress to server</button>
-      <button class="danger-btn" id="resetBtn">Reset all progress</button>
-      <button class="close-btn" id="closeSettings">Close</button>
-    </div>
-  </div>
-
-  <!-- Stats drawer -->
-  <div class="overlay hidden" id="statsOverlay">
-    <div class="drawer">
-      <h2>Progress &amp; Mastery</h2>
-      <div class="totals" id="totalsBox"></div>
-      <h3>Per roman numeral</h3>
-      <div class="mastery" id="masteryBox"></div>
-      <button class="close-btn" id="closeStats">Close</button>
-    </div>
-  </div>
-
-  <script src="theory.js"></script>
   <script src="audio.js"></script>
-  <script src="keyboard.js"></script>
-  <script src="game.js"></script>
+  <script src="harp.js"></script>
 </body>
 </html>

@@ -165,7 +165,7 @@
 
   // ---------------- state ----------------
   const session = { streak: 0, t0: 0 };
-  const settings = { key: 'random', triads: true, sevenths: true, quartal: true, names: true, fingers: true, sound: true };
+  const settings = { key: 'random', triads: true, sevenths: true, quartal: true, names: true, sound: true };
   let current = null;
 
   const pick = (a) => a[Math.floor(Math.random() * a.length)];
@@ -293,16 +293,16 @@
       svg += '<line x1="' + x + '" y1="' + topY + '" x2="' + x + '" y2="' + y2 +
              '" stroke="' + col + '" stroke-width="' + w + '" stroke-linecap="round"/>';
       if (on) {
-        const my = topY + len * 0.5;
+        // Stagger each lit note vertically by its position in the chord so the
+        // circles never overlap, even when the lit strings sit close together.
+        // Notes run bass->treble (left->right); subtracting the order term pushes
+        // higher notes up, reinforcing the natural string-length diagonal.
+        const STAGGER = 38; // > circle diameter (2*r=30) => guaranteed no overlap
+        const my = topY + len * 0.5 - (on.order - (on.total - 1) / 2) * STAGGER;
         svg += '<circle cx="' + x + '" cy="' + my + '" r="15" fill="#16a34a" stroke="#0b3d20" stroke-width="2"/>';
         if (settings.names) {
           svg += '<text x="' + x + '" y="' + (my + 4) + '" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">' +
                  fix(on.note.letter + on.note.acc) + '</text>';
-        }
-        if (settings.fingers) {
-          // thumb (1) plays the highest string => largest order index
-          const finger = on.total - on.order;
-          svg += '<text x="' + x + '" y="' + (my - 22) + '" text-anchor="middle" font-size="13" font-weight="700" fill="#0b3d20">' + finger + '</text>';
         }
       }
       // octave labels under C strings
@@ -415,7 +415,7 @@
     sel.value = 'random';
     sel.onchange = () => { settings.key = sel.value; newQuestion(); };
 
-    [['optTri', 'triads'], ['optSev', 'sevenths'], ['optQ', 'quartal'], ['optNames', 'names'], ['optFingers', 'fingers'], ['optSound', 'sound']]
+    [['optTri', 'triads'], ['optSev', 'sevenths'], ['optQ', 'quartal'], ['optNames', 'names'], ['optSound', 'sound']]
       .forEach(([id, k]) => { const el = $(id); if (!el) return; el.checked = settings[k]; el.onchange = () => { settings[k] = el.checked; newQuestion(); }; });
 
     $('skip').onclick = newQuestion;

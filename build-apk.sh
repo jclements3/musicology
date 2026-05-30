@@ -56,6 +56,32 @@ say()  { printf '\033[1;36m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[!]\033[0m %s\n' "$*"; }
 die()  { printf '\033[1;31m[x]\033[0m %s\n' "$*" >&2; exit 1; }
 
+# ---- regenerate the launcher icon from the committed master --------------
+# android/ is gitignored, so its res/mipmap-* icons are NOT in the repo. We
+# regenerate them from icon-build/icon-1024.png on every build so any clone
+# gets the harp icon (not Capacitor's default). Needs ImageMagick; skips with
+# a warning if it's missing so the build still succeeds with the default icon.
+apply_icons() {
+  local master="$ROOT/icon-build/icon-1024.png"
+  local res="android/app/src/main/res"
+  [ -f "$master" ] || { warn "icon master $master missing; keeping Capacitor's default icon."; return 0; }
+  command -v convert >/dev/null 2>&1 || { warn "ImageMagick 'convert' not found; keeping default icon. (apt install imagemagick)"; return 0; }
+  say "Applying launcher icon from icon-build/icon-1024.png"
+  # Legacy square + round launcher bitmaps (density:size).
+  for pair in "mdpi 48" "hdpi 72" "xhdpi 96" "xxhdpi 144" "xxxhdpi 192"; do
+    set -- $pair
+    convert "$master" -resize "$2x$2" "$res/mipmap-$1/ic_launcher.png"
+    cp "$res/mipmap-$1/ic_launcher.png" "$res/mipmap-$1/ic_launcher_round.png"
+  done
+  # Adaptive foregrounds at 108dp; art scaled into the inner 2/3 safe zone on a
+  # transparent canvas so the Android 8+ icon mask doesn't crop the notes.
+  for triple in "mdpi 108 72" "hdpi 162 108" "xhdpi 216 144" "xxhdpi 324 216" "xxxhdpi 432 288"; do
+    set -- $triple
+    convert "$master" -resize "$3x$3" -background none -gravity center \
+            -extent "$2x$2" "$res/mipmap-$1/ic_launcher_foreground.png"
+  done
+}
+
 # ---- prerequisite checks -------------------------------------------------
 command -v node >/dev/null 2>&1 || die "node not found. Install Node.js (e.g. 'sudo apt install nodejs npm' or nvm)."
 command -v npm  >/dev/null 2>&1 || die "npm not found. Install Node.js/npm."
@@ -74,8 +100,10 @@ if [ ! -f package.json ]; then
 fi
 
 if [ ! -d node_modules/@capacitor/core ]; then
-  say "Installing Capacitor (core, cli, android)"
-  npm install @capacitor/core @capacitor/cli @capacitor/android
+  # Pin to Capacitor 7.x: Capacitor 8 requires Node >=22, but the lab runs
+  # Node 20. v7 supports Node 20 and produces the same standalone APK.
+  say "Installing Capacitor 7.x (core, cli, android)"
+  npm install @capacitor/core@^7 @capacitor/cli@^7 @capacitor/android@^7
 fi
 
 NPX="npx --no-install"
@@ -89,6 +117,9 @@ fi
 # ---- copy web/ assets into the native project ---------------------------
 say "Copying web/ assets into the Android project (cap sync)"
 $NPX cap sync android
+
+# ---- regenerate the custom launcher icon (after sync, before build) ------
+apply_icons
 
 # ---- open in Android Studio instead of CLI-building, if asked -----------
 if [ "$OPEN" = "1" ]; then
@@ -130,7 +161,7 @@ if [ "$INSTALL" = "1" ]; then
   [ -n "$DEVS" ] || die "No authorized device. Plug in USB-C, enable USB debugging, accept the prompt, then re-run."
   say "Installing onto: $DEVS"
   adb install -r "$APK_PATH"
-  say "Installed. Look for 'RN Trainer' in the tablet's app drawer."
+  say "Installed. Look for 'Harp Trainer' in the tablet's app drawer."
 else
   echo
   say "To install onto the tablet:  adb install -r $APK_PATH"

@@ -1,6 +1,6 @@
 {
   "appId": "com.musicology.rntrainer",
-  "appName": "RN Trainer",
+  "appName": "Harp Trainer",
   "webDir": "web",
   "server": {
     "androidScheme": "https"
