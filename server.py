@@ -80,9 +80,22 @@ class Handler(BaseHTTPRequestHandler):
             return self._post_progress()
         self._send(404, "Not found")
 
+    def _progress_path(self):
+        # optional ?ns=<name> keeps separate stores (e.g. piano vs harp)
+        ns = ""
+        if "?" in self.path:
+            for part in self.path.split("?", 1)[1].split("&"):
+                if part.startswith("ns="):
+                    ns = part[3:]
+        ns = "".join(c for c in ns if c.isalnum())[:24]
+        if ns:
+            return os.path.join(DATA_DIR, "progress_%s.json" % ns)
+        return PROGRESS_FILE
+
     def _get_progress(self):
-        if os.path.isfile(PROGRESS_FILE):
-            with open(PROGRESS_FILE, "rb") as f:
+        path = self._progress_path()
+        if os.path.isfile(path):
+            with open(path, "rb") as f:
                 return self._send(200, f.read(), "application/json; charset=utf-8")
         return self._send(200, "{}", "application/json; charset=utf-8")
 
@@ -94,7 +107,7 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, UnicodeDecodeError):
             return self._send(400, "Bad JSON")
         os.makedirs(DATA_DIR, exist_ok=True)
-        with open(PROGRESS_FILE, "w", encoding="utf-8") as f:
+        with open(self._progress_path(), "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
         self._send(200, '{"ok":true}', "application/json; charset=utf-8")
 

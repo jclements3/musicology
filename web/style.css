@@ -66,6 +66,8 @@ html, body {
 }
 .mode-tab small { font-weight: 400; opacity: .7; }
 .mode-tab.active { background: var(--bg2); color: var(--txt); border-color: var(--accent); }
+a.mode-tab { text-decoration: none; display: inline-flex; align-items: baseline; }
+a.harp-link { margin-left: auto; border-color: var(--gold); color: var(--gold); }
 
 /* ---------- stage ---------- */
 #stage {
