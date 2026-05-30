@@ -79,25 +79,91 @@ the device, which is ideal while iterating.
 
 ---
 
-## Build a standalone Android APK later (Capacitor)
+## Build a proper standalone Android app (Capacitor)
 
-When you want a real installable app (no computer required), wrap the same `web/`
-folder with [Capacitor](https://capacitorjs.com/). A `capacitor.config.json` is
-already included.
+When you want a real installable app (no computer required at play time), wrap the
+same `web/` folder with [Capacitor](https://capacitorjs.com/) into an APK. A
+`capacitor.config.json` is already included, and **`build-apk.sh` does the whole
+thing** — scaffold, bundle, build, and install onto the tablet over USB-C.
+
+This is the lab-computer path: plug in the cable, then:
+
+```bash
+./build-apk.sh --install     # first run scaffolds android/, builds a debug APK, installs it
+```
+
+That's it — look for **RN Trainer** in the tablet's app drawer afterward. It runs
+fully offline; no Python server on the device.
+
+Other modes:
+
+```bash
+./build-apk.sh               # just build a debug APK (don't install)
+./build-apk.sh --release     # unsigned release APK instead of debug
+./build-apk.sh --open        # open in Android Studio instead of CLI-building
+./build-apk.sh --clean       # wipe generated node_modules/ + android/ and rebuild
+./build-apk.sh --help
+```
+
+Prefer doing it by hand? The equivalent manual steps:
 
 ```bash
 npm init -y
 npm install @capacitor/core @capacitor/cli @capacitor/android
 npx cap add android
-npx cap copy            # copies web/ into the native project
-npx cap open android    # opens Android Studio -> Build > Build APK
+npx cap sync android          # copies web/ into the native project
+cd android && ./gradlew assembleDebug      # APK in app/build/outputs/apk/debug/
+# or: npx cap open android    # then Build > Build APK in Android Studio
 ```
 
 Notes:
-- `webDir` is set to `web`, so `npx cap copy` bundles the app assets locally —
-  it then runs fully offline (no Python server needed on the device).
+- `webDir` is `web`, so `cap sync` bundles the app assets locally — it then runs
+  fully offline (no Python server needed on the device).
 - For offline progress in the standalone build, `localStorage` is the source of
-  truth; the server sync is a no-op when there's no server, which is fine.
+  truth; the server sync is a harmless no-op when there's no server.
+- The debug APK is fine for your own tablet. A signed *release* APK is only needed
+  for the Play Store; `--release` produces an unsigned one to sign later.
+
+### Prerequisites (lab computer)
+
+- **Node.js 18+** and **npm** — `node -v`, `npm -v`.
+- **JDK 17** — `java -version` (Android Gradle Plugin wants 17).
+- **Android SDK** with the `ANDROID_SDK_ROOT` env var pointing at it, e.g.
+  `export ANDROID_SDK_ROOT=$HOME/Android/Sdk`. Installing Android Studio once is
+  the easiest way to get the SDK + platform-tools.
+- **adb** (platform-tools) on `PATH` for `--install`.
+
+### Troubleshooting checklist
+
+USB-C / device:
+- [ ] **USB debugging** enabled: Settings → About → tap *Build number* 7×, then
+      Settings → System → Developer options → **USB debugging** on.
+- [ ] Plugged in, and the on-tablet **"Allow USB debugging?"** prompt accepted
+      (tick *Always allow from this computer*).
+- [ ] `adb devices` lists the tablet as `device` (not `unauthorized` / `offline`).
+      If `unauthorized`: re-accept the prompt. If empty: try another cable/port
+      (some cables are charge-only), or `adb kill-server && adb start-server`.
+- [ ] USB mode set to **File transfer / MTP**, not "charging only".
+
+Build:
+- [ ] `node -v` ≥ 18. If older, install via [nvm](https://github.com/nvm-sh/nvm).
+- [ ] `java -version` shows 17. Wrong JDK is the #1 Gradle failure; set
+      `JAVA_HOME` to the JDK 17 path.
+- [ ] `echo $ANDROID_SDK_ROOT` is non-empty and the path exists. If Gradle says
+      *"SDK location not found"*, set it (see prereqs) or create
+      `android/local.properties` with `sdk.dir=/path/to/Android/Sdk`.
+- [ ] First Gradle run downloads a lot — let it finish; it needs network.
+- [ ] *"Failed to install... INSTALL_FAILED_UPDATE_INCOMPATIBLE"*: a different
+      build is already installed — `adb uninstall com.musicology.rntrainer` then
+      re-run.
+- [ ] Licenses not accepted: `sdkmanager --licenses` and accept all.
+- [ ] Clean slate after a broken run: `./build-apk.sh --clean`.
+
+App behavior:
+- [ ] Blank screen / no sound on first tap: audio needs a user gesture — tap
+      once; the Web Audio context resumes on the first interaction.
+- [ ] Stuck rotated: the app requests landscape via the manifest; if your tablet
+      forces portrait, disable auto-rotate or rotate the device.
 
 ---
 
@@ -105,11 +171,14 @@ Notes:
 
 ```
 musicology/
-├── server.py                 # Python dev server + /api/progress GET/POST
+├── server.py                 # Python dev server + /api/progress GET/POST (?ns= per app)
+├── build-apk.sh              # one-command Capacitor build + USB install
 ├── capacitor.config.json     # Android packaging config
-├── data/                     # progress.json lives here (created on first save)
+├── data/                     # progress.json / progress_harp.json (created on save)
 └── web/                      # the app (this is what ships to Android)
-    ├── index.html
+    ├── index.html            # piano game (identify / build)
+    ├── harp.html             # 33-string harp shape-chord drill
+    ├── harp.js               # harp strings, pedals, 9×7 matrix, mastery hints
     ├── style.css
     ├── theory.js             # key-agnostic music engine (scales, chords, romans)
     ├── audio.js              # Web Audio chord/feedback playback
