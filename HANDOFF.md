@@ -107,6 +107,9 @@ Android resources (those live under the gitignored `android/`).
 - **Church-mode header above the table** (`buildChoices` builds `.matrix-head`):
   each of the 7 columns is a scale degree, labelled with its major-scale mode
   (Ion Dor Phr Lyd Mix Aeo Loc).
+- **Note-circle z-order fix** (`drawHarp`): circles + labels now collect in an
+  `overlay` buffer appended after all strings, so a later string never paints over
+  an earlier string's circle (was happening with the larger radius).
 
 ## Known TODOs / loose ends
 
