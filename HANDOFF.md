@@ -18,6 +18,72 @@ different numerals as the key changes.
 > the harp (it was promoted from the old `web/harp.html`). If you see piano
 > references lingering (see TODOs), they're leftovers.
 
+## Latest session — sung-solfa HINT feature + bottom-bar redesign
+
+A tap-to-sing **Hint** was added and the chrome was reflowed to give the chord
+table and the hint more room. All of this is in `web/` (the Capacitor bundle);
+no native layer exists — there is **no oboe / native TextToSpeech** here, the
+"audio path" is `web/audio.js` (Web Audio) + the browser speech engine.
+
+**The Hint (big blue strip at the bottom of the left column):**
+
+- Tapping the strip swaps it *in place* (fixed 110px height — the table never
+  shrinks) from the call-to-action button to two horizontal blocks, and plays a
+  sung cue. The ↻ button (pinned absolute to the right edge so flex overflow
+  can't clip it) replays. Dismisses on the next exercise (`hideHintPanel()` in
+  `newQuestion()`).
+- **Auto-opens on a WRONG answer:** `answer()` calls `showHintPanel(settings.sound)`
+  on a miss, so the formula + solfa appear and the cue sings (silent if Sound is
+  off) alongside the usual red/green + answer reveal. The wrong-answer
+  auto-advance delay is stretched to fit the cue
+  (`(notes+1)*760 + 2000` ms, or 3200 ms when muted). `showHintPanel(play)` takes
+  a flag; the manual tap passes nothing (plays), the auto-open passes the Sound
+  setting.
+- **It deliberately hides the Roman-numeral ANSWER.** Left block shows the
+  naming formula `n = (p − k − o_s) mod 7 + 1` with this chord's inputs plugged
+  in and the arithmetic, but the result is left as `?` (so the player works out
+  the numeral). Right block is the movable-do solfa phrase `Do | <shape>` with
+  the pedal syllable (first shape syllable) emphasised. Quartals show
+  "no Roman numeral; figured bass = q/q4".
+- Formula tables/logic all live in `harp.js` and match `concreteName()` /
+  `ROMAN[]`: `SOLFA`, `RATIO` (r_s per shape), `LETTER_VAL` (A..G = 1..7),
+  `META[].off` (= o_s). `showHintPanel()` builds the markup; `hintCue()` builds
+  the played sequence.
+
+**The played cue (`hintCue()` in harp.js + `playSolfa()`/`voice()`/`speak()` in
+audio.js):**
+
+- Sings the tonic **Do**, then the shape bottom→top on solfa syllables.
+- **Voice-led** to be singable: Do is anchored, the bass is placed in the octave
+  *nearest* Do (so e.g. Do=C steps **down a 2nd** to the near B instead of
+  leaping up a 7th), and the shape builds up by its own 2nd/3rd/4th steps.
+- **Transposed as a whole into a lyric-baritone range** (centred ~F#3,
+  `BARITONE_CENTRE = 54`). Absolute pitch is intentionally NOT the harp's actual
+  octave — only the *relative* intervals matter (per the player's request).
+- Timbre is a **voiced "aah"**: sawtooth through three "ah"-vowel bandpass
+  formants (darkened for a baritone colour) + vibrato — not a piano/MIDI tone.
+  The syllable WORDS are spoken via `window.speechSynthesis`, scheduled to each
+  note's onset (the in-app stand-in for Android TextToSpeech).
+
+**Layout changes (all CSS/markup in `index.html`):**
+
+- **Footer removed.** `▶ Play` and `Skip / Next` moved into the top bar; the old
+  footer stats became `Done`/`Best` HUD tiles. (`#app` is now `auto 1fr`.)
+- Removed the "Which Roman-numeral chord…" question line.
+- **Column fills the height** (`main` got `grid-template-rows:minmax(0,1fr)`,
+  `.left` got `height:100%`) so the matrix grows — **taller rows**, bigger
+  formula font (code 18 / worked 17 / legend 13px).
+- **No gap between table and hint:** `#feedback`/`#reveal` are now
+  `position:absolute` overlays that float over the bottom of the table (above the
+  hint) and only paint a backing panel when non-empty (`:not(:empty)`), so they
+  reserve no flow space. The hint strip sits flush at the very bottom.
+
+> Untouched on purpose: the exercise/scoring logic in `answer()` and the
+> per-shape mastery tracking. The *old* mastery-scaffolded text hint (`#hint`,
+> `showHint()`) was answer-revealing and conflicted with the new non-revealing
+> Hint, so `showHint()` is now a no-op guard (the `#hint` element was removed);
+> the mastery data it read is still tracked. Bring it back if wanted.
+
 ## The tablet
 
 - Serial: `P90YPDU16Y251200164`, ~1920x1200 landscape, Android.

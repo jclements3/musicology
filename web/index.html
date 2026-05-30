@@ -15,7 +15,7 @@
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
     html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);
       color:#f3ead7;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none;}
-    #app{display:grid;grid-template-rows:auto 1fr auto;height:100vh;width:100vw;}
+    #app{display:grid;grid-template-rows:auto 1fr;height:100vh;width:100vw;}
 
     /* ---- single top bar: brand · nav · key · filters · pedals · metrics ---- */
     #topbar{display:flex;align-items:center;gap:14px;padding:6px 16px;background:#1f160d;
@@ -52,13 +52,15 @@
     .hud .val{font-size:18px;font-weight:700;}
     .iconbtn{background:transparent;color:#e9dcc0;border:1px solid #6a5836;border-radius:8px;
       padding:6px 10px;font-size:12px;cursor:pointer;white-space:nowrap;}
+    .iconbtn:active{transform:scale(.96);}
+    .iconbtn.gold{background:var(--gold);color:#2a1f14;border-color:var(--gold);font-weight:700;}
 
     /* ---- main: answers (left) · harp strings (right) ---- */
-    main{display:grid;grid-template-columns:minmax(440px,0.72fr) 1fr;gap:14px;
+    main{display:grid;grid-template-columns:minmax(440px,0.72fr) 1fr;
+      grid-template-rows:minmax(0,1fr);gap:14px;
       padding:12px 16px;overflow:hidden;min-height:0;}
 
-    .left{display:flex;flex-direction:column;gap:8px;min-height:0;}
-    .qtext{font-size:16px;font-weight:700;line-height:1.2;}
+    .left{display:flex;flex-direction:column;gap:6px;min-height:0;height:100%;position:relative;}
     #answers{flex:1;min-height:0;display:flex;flex-direction:column;}
     .matrix-head{display:grid;grid-template-columns:repeat(7,1fr);width:100%;
       flex:none;margin-bottom:3px;padding:0 1px;}
@@ -71,7 +73,7 @@
       border:1px solid var(--rule);border-radius:10px;overflow:hidden;background:#fbfaf6;}
     .ans{font-size:38px;font-weight:400;background:#fbfaf6;color:#2a2017;
       border:none;cursor:pointer;transition:background .12s;
-      display:flex;align-items:center;justify-content:center;min-height:0;padding:0 1px;}
+      display:flex;align-items:center;justify-content:center;min-height:0;padding:10px 4px;}
     .ans.odd{background:#f0efe9;}              /* alternating row stripe, per your table */
     .ans:active{transform:scale(.97);}
     .ans:hover:not(:disabled){background:#ffe9a8;}
@@ -90,10 +92,64 @@
     #hint.show{max-height:120px;opacity:1;padding:7px 12px;}
     #hint b{color:var(--gold);} #hint .k{color:#9fd0ff;font-weight:700;}
     #hint .step{color:#b9a47e;}
-    .feedback{min-height:24px;font-size:19px;font-weight:700;text-align:center;}
+    /* Hint strip below the table: a FIXED-height band that swaps in place
+       between the call-to-action button and the revealed hint. Its height never
+       changes, so the chord table above it never shrinks when the hint opens. */
+    #hintStrip{flex:none;height:110px;margin-top:0;position:relative;
+      background:linear-gradient(180deg,#cfe2ff,#9fc2f5);
+      border:1px solid #5a7bbf;border-radius:12px;overflow:hidden;
+      box-shadow:0 2px 6px rgba(0,0,0,0.18);color:#0f2a52;}
+    #hintStrip.playing{box-shadow:0 0 0 3px rgba(255,210,74,0.6);}
+    /* prompt state (default): the whole strip is one big tappable button */
+    #hintStrip .hint-prompt{display:flex;align-items:center;gap:16px;width:100%;height:100%;
+      text-align:left;cursor:pointer;background:transparent;border:none;color:inherit;
+      padding:0 20px;}
+    #hintStrip .hint-reveal{display:none;}
+    #hintStrip.revealed .hint-prompt{display:none;}
+    #hintStrip.revealed .hint-reveal{display:flex;align-items:stretch;gap:0;
+      width:100%;height:100%;}
+    #hintStrip .hb-spark{font-size:30px;line-height:1;}
+    #hintStrip .hb-text{display:flex;flex-direction:column;gap:3px;}
+    #hintStrip .hb-label{font-size:19px;font-weight:800;letter-spacing:.2px;}
+    #hintStrip .hb-sub{font-size:13px;font-weight:600;color:#274a7a;}
+    #hintStrip .hb-sub b{color:#0f2a52;}
+    /* revealed: formula | solfa | replay, laid out HORIZONTALLY across the band */
+    /* formula takes all remaining width; solfa is a fixed band sized to its
+       widest phrase ("Do | LaDoMiSo") -- the cue is never wider than 4 syllables */
+    #hintStrip .hr-formula{flex:1;min-width:0;padding:9px 16px;
+      display:flex;flex-direction:column;justify-content:center;gap:3px;}
+    #hintStrip .hr-solfa{flex:none;width:288px;padding:9px 60px 9px 16px;
+      border-left:1px solid rgba(15,42,82,0.25);
+      display:flex;flex-direction:column;justify-content:center;gap:3px;}
+    /* absolute so flex overflow can never clip it off the right edge */
+    #hintStrip .hr-replay{position:absolute;top:0;right:0;bottom:0;width:58px;
+      cursor:pointer;font-size:26px;font-weight:800;
+      color:#0f2a52;background:rgba(15,42,82,0.12);border:none;
+      border-left:1px solid rgba(15,42,82,0.25);z-index:2;}
+    #hintStrip .hr-replay:active{background:rgba(15,42,82,0.22);}
+    #hintStrip code{font-family:"Courier New",monospace;font-size:18px;font-weight:700;
+      color:#0f2a52;background:rgba(15,42,82,0.10);padding:3px 8px;border-radius:5px;
+      align-self:flex-start;}
+    #hintStrip .hp-worked{font-size:17px;color:#163a6b;}
+    #hintStrip .hp-legend{font-size:13px;color:#395f93;line-height:1.25;}
+    #hintStrip .hp-key{font-size:11px;text-transform:uppercase;letter-spacing:.6px;
+      color:#274a7a;font-weight:800;}
+    #hintStrip .hp-phrase{font-size:21px;font-weight:700;letter-spacing:.3px;white-space:nowrap;}
+    #hintStrip .hp-bar{color:#5a7bbf;padding:0 6px;}
+    #hintStrip .hp-pedal{color:#a8410a;font-weight:900;text-decoration:underline;}
+    #hintStrip .hp-cap{font-size:12px;color:#395f93;}
+    #hintStrip .hp-q{color:#a8410a;font-weight:900;}
+    /* feedback + reveal float over the bottom of the table (just above the hint
+       strip) so they reserve NO space -- the table meets the hint with no gap.
+       They only paint a backing panel when they actually have content. */
+    .feedback{position:absolute;left:8px;right:8px;bottom:158px;z-index:3;pointer-events:none;
+      font-size:19px;font-weight:700;text-align:center;}
     .feedback.ok{color:#7ee29a;} .feedback.bad{color:#ff9aa4;}
-    #reveal{min-height:34px;text-align:center;font-size:14px;color:#e9dcc0;}
+    #reveal{position:absolute;left:8px;right:8px;bottom:120px;z-index:3;pointer-events:none;
+      text-align:center;font-size:14px;color:#e9dcc0;}
     #reveal b{color:var(--gold);} .muted{color:#b9a47e;}
+    .feedback:not(:empty),#reveal:not(:empty){background:rgba(31,22,13,0.92);
+      border:1px solid #4a3a26;border-radius:9px;padding:6px 12px;}
 
     .right{display:flex;flex-direction:column;min-height:0;}
     #harp{position:relative;flex:1;background:var(--panel);border-radius:12px;border:1px solid var(--rule);
@@ -138,17 +194,33 @@
         <div class="it"><span class="lab">Streak</span><span class="val" id="streak">0</span></div>
         <div class="it"><span class="lab">Score</span><span class="val" id="score">0</span></div>
         <div class="it"><span class="lab">Acc</span><span class="val" id="acc">–</span></div>
+        <div class="it"><span class="lab">Done</span><span class="val" id="answered">0</span></div>
+        <div class="it"><span class="lab">Best</span><span class="val" id="best">0</span></div>
       </div>
+      <button class="iconbtn" id="play" title="Play the lit chord">▶ Play</button>
+      <button class="iconbtn gold" id="skip" title="Next exercise">Skip / Next</button>
       <button class="iconbtn" id="reset" title="Reset harp progress">Reset</button>
     </div>
 
     <main>
       <div class="left">
-        <div class="qtext">Which Roman-numeral chord is lit on the harp?</div>
         <div id="answers"></div>
-        <div id="hint"></div>
         <div class="feedback" id="feedback"></div>
         <div id="reveal"></div>
+        <div id="hintStrip">
+          <button id="hintBtn" type="button" class="hint-prompt">
+            <span class="hb-spark">💡</span>
+            <span class="hb-text">
+              <span class="hb-label">Hint — sing the solfa cue</span>
+              <span class="hb-sub">tap to hear <b>Do → shape</b> sung &amp; see the naming formula (not the answer)</span>
+            </span>
+          </button>
+          <div class="hint-reveal">
+            <div class="hr-formula" id="hpFormula"></div>
+            <div class="hr-solfa" id="hpSolfa"></div>
+            <button class="hr-replay" id="hpReplay" type="button" title="Replay sung cue">↻</button>
+          </div>
+        </div>
       </div>
       <div class="right">
         <div id="harp"><div id="stringlayer"></div>
@@ -160,13 +232,6 @@
       </div>
     </main>
 
-    <footer>
-      <span class="stat"><b id="answered">0</b> answered</span>
-      <span class="stat">best streak <b id="best">0</b></span>
-      <span class="spacer"></span>
-      <button class="btn ghost" id="play">▶ Play chord</button>
-      <button class="btn" id="skip">Skip / Next</button>
-    </footer>
   </div>
 
   <script src="audio.js"></script>

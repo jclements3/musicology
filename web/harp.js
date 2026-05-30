@@ -64,6 +64,14 @@
     quartal: ['44', '444'],
   };
 
+  // Movable-do solfa, two-letter, indexed by scale degree (0..6).
+  const SOLFA = ['Do', 'Re', 'Mi', 'Fa', 'So', 'La', 'Ti'];
+  // r_s figured-bass ratio per shape (quartals carry q/q4 instead).
+  const RATIO = { '33': '', '34': '6', '43': '6/4', '333': '7', '332': '6/5',
+    '323': '4/3', '233': '4/2', '44': 'q', '444': 'q4' };
+  // Letter -> number, A..G = 1..7 (the naming-formula convention).
+  const LETTER_VAL = { A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7 };
+
   // ---------------- strings: C2 .. G6 = 33 diatonic strings ----------------
   const STRINGS = [];
   for (let oct = 2; oct <= 6; oct++) {
@@ -203,6 +211,7 @@
     drawHarp(notes);
     buildChoices(shape, bassDeg);
     showHint();
+    hideHintPanel();        // the on-demand Hint panel dismisses on next exercise
     $('feedback').textContent = '';
     $('feedback').className = 'feedback';
     $('reveal').textContent = '';
@@ -220,6 +229,7 @@
   const HINT_FULL = 3, HINT_MED = 6, HINT_NONE = 10;
   function showHint() {
     const el = $('hint');
+    if (!el) return;   // scaffolded text hint removed -- replaced by the big Hint button
     if (!current) { el.className = ''; el.innerHTML = ''; return; }
     const c = current;
     const m = progress.mastery[c.shape] || { seen: 0, correct: 0 };
@@ -247,6 +257,106 @@
     }
     el.innerHTML = html + ' <span class="step">(' + c.shape + ' mastery ' + got + '/' + HINT_NONE + ')</span>';
     el.className = 'show';
+  }
+
+  // ---------------- on-demand HINT panel (formula + solfa + chord + cue) ----
+  // Distinct from the scaffolded #hint above: this is the tap-to-reveal Hint
+  // button. It SHOWS the naming formula/legend, the key->pedal->shape solfa
+  // phrase, and the resolved chord notation, and PLAYS a sung solfa cue.
+
+  // Build the sung cue, voice-led to stay singable: anchor Do in a comfortable
+  // middle register, then move to the bass by the SMALLEST interval (the bass is
+  // placed in whichever octave is nearest Do -- e.g. from Do=C, step DOWN a 2nd
+  // to the near B instead of leaping up a 7th to a high B), and build the shape
+  // up from there. The shape's own steps are 2nds/3rds (4ths for quartals), so
+  // every move in the cue is a 2nd, 3rd, or 4th. Key signature still applies --
+  // only the octaves are chosen for singability.
+  function hintCue() {
+    const c = current;
+    const offs = shapeSteps(c.shape);
+    const tonic = c.scale[0];
+    // Build the cue with the right RELATIVE pitches: Do, then the bass in the
+    // octave nearest Do (small Do->bass step), then the shape up by its own steps.
+    const doMidi = midiOf({ letter: tonic.letter, acc: tonic.acc, octave: 4 });
+    const origBass = midiOf(c.notes[0]);
+    const shift = 12 * Math.round((doMidi - origBass) / 12);
+    const seq = [{ midi: doMidi, syllable: 'Do' }];
+    c.notes.forEach((nt, i) => {
+      const deg = ((c.bassDeg + offs[i]) % 7 + 7) % 7;
+      seq.push({ midi: midiOf(nt) + shift, syllable: SOLFA[deg] });
+    });
+    // Transpose the WHOLE cue (by whole octaves) so it's centred in a comfortable
+    // lyric-baritone range. Absolute pitch doesn't matter -- only the relative
+    // intervals do -- so this just lands the tune where it's easy to sing along.
+    const ms = seq.map((e) => e.midi);
+    const centre = (Math.min(...ms) + Math.max(...ms)) / 2;
+    const BARITONE_CENTRE = 54;   // ~F#3, middle of a lyric-baritone tessitura
+    const octShift = 12 * Math.round((BARITONE_CENTRE - centre) / 12);
+    seq.forEach((e) => { e.midi += octShift; });
+    return seq;
+  }
+
+  let cueTimer = 0;
+  function playHintCue() {
+    if (!current || !window.Audio2 || !window.Audio2.playSolfa) return;
+    const seq = hintCue();
+    window.Audio2.playSolfa(seq);
+    // brief "playing" glow on the strip for the cue's duration
+    const strip = $('hintStrip');
+    if (strip) {
+      strip.classList.add('playing');
+      clearTimeout(cueTimer);
+      cueTimer = setTimeout(() => strip.classList.remove('playing'), seq.length * 760 + 200);
+    }
+  }
+
+  // Reveal the hint in place (the fixed strip swaps the button for two
+  // horizontal blocks): the naming FORMULA with this chord's inputs and the
+  // arithmetic but the result left as "?", and the DoReMi solfa phrase. It
+  // deliberately does NOT show the resolved Roman numeral -- that's the answer
+  // the player is here to work out.
+  function showHintPanel(play) {
+    if (!current) return;
+    const c = current;
+    const quartal = META[c.shape].kind === 'quartal';
+    const offs = shapeSteps(c.shape);
+
+    // --- left block: formula + worked substitution (answer withheld) ---
+    let worked, legend;
+    if (quartal) {
+      worked = 'quartal — no Roman numeral; figured bass = <span class="hp-q">' +
+        RATIO[c.shape] + '</span>';
+      legend = 'p = pedal (bass) letter, k = key tonic · A–G = 1–7';
+    } else {
+      const pL = c.scale[c.bassDeg].letter, kL = c.scale[0].letter;
+      const p = LETTER_VAL[pL], k = LETTER_VAL[kL], oS = META[c.shape].off;
+      const rS = RATIO[c.shape] || '(none)';
+      worked = '(' + p + ' − ' + k + ' − ' + oS + ') mod 7 + 1 = <span class="hp-q">?</span>' +
+        ' → numeral + r_s(<b>' + rS + '</b>) = <span class="hp-q">?</span>';
+      legend = 'p=' + fix(pL) + '(' + p + '), k=' + fix(kL) + '(' + k + '), o_s=' + oS +
+        ' · A–G = 1–7';
+    }
+    $('hpFormula').innerHTML =
+      '<code>n = (p − k − o_s) mod 7 + 1</code>' +
+      '<div class="hp-worked">' + worked + '</div>' +
+      '<div class="hp-legend">' + legend + '</div>';
+
+    // --- right block: key -> pedal -> shape solfa phrase, pedal emphasized ---
+    const sylls = offs.map((o) => SOLFA[((c.bassDeg + o) % 7 + 7) % 7]);
+    const phrase = 'Do <span class="hp-bar">|</span> ' +
+      sylls.map((s, i) => (i === 0 ? '<b class="hp-pedal">' + s + '</b>' : s)).join('');
+    $('hpSolfa').innerHTML = '<div class="hp-key">solfa cue</div>' +
+      '<div class="hp-phrase">' + phrase + '</div>' +
+      '<div class="hp-cap">tonic Do → pedal → shape</div>';
+
+    $('hintStrip').classList.add('revealed');
+    if (play !== false) playHintCue();
+  }
+
+  function hideHintPanel() {
+    const el = $('hintStrip');
+    if (el) el.classList.remove('revealed', 'playing');
+    if (window.Audio2 && window.Audio2.stopSolfa) window.Audio2.stopSolfa();
   }
 
   // ---------------- pedal / lever board ----------------
@@ -416,16 +526,25 @@
     }
     document.querySelectorAll('#answers .ans').forEach((b) => { b.disabled = true; });
 
-    // reveal full description + play the chord
+    // reveal full description
     const cn = concreteName(current.scale, current.bassDeg, current.shape);
     $('reveal').innerHTML = 'shape <b>' + current.shape + '</b> · hex <b>' + HEX[current.shape] +
       '</b> · bass degree <b>' + (current.bassDeg + 1) + '</b> · <b>' + romanHTML(current.answer) + '</b> = ' + cn +
       ' &nbsp;<span class="muted">(' + current.notes.map((x) => fix(x.letter + x.acc) + x.octave).join(' ') + ')</span>';
-    if (settings.sound && window.Audio2) window.Audio2.playChord(current.notes.map(midiOf));
 
     save();
     updateHud();
-    setTimeout(newQuestion, ok ? 950 : 2100);
+
+    let delay = 950;
+    if (ok) {
+      if (settings.sound && window.Audio2) window.Audio2.playChord(current.notes.map(midiOf));
+    } else {
+      // Got it wrong: auto-open the Hint (formula + solfa) and sing the cue
+      // (silent if Sound is off). Hold long enough to hear it / read the hint.
+      showHintPanel(settings.sound);
+      delay = settings.sound ? (current.notes.length + 1) * 760 + 2000 : 3200;
+    }
+    setTimeout(newQuestion, delay);
   }
 
   function flash(msg, ok) { const f = $('feedback'); f.textContent = msg; f.className = 'feedback ' + (ok ? 'ok' : 'bad'); }
@@ -452,6 +571,10 @@
 
     $('skip').onclick = newQuestion;
     $('play').onclick = () => { if (current && window.Audio2) window.Audio2.playChord(current.notes.map(midiOf)); };
+    // Hint strip: tapping the prompt reveals the hint in place + sings the cue;
+    // once revealed, the ↻ button replays the cue (strip height never changes).
+    $('hintBtn').onclick = showHintPanel;
+    $('hpReplay').onclick = (e) => { e.stopPropagation(); playHintCue(); };
     $('reset').onclick = () => { if (confirm('Reset harp progress?')) { progress = blank(); save(); updateHud(); } };
     window.addEventListener('resize', () => { if (current) drawHarp(current.notes); });
 
