@@ -79,8 +79,8 @@ Android resources (those live under the gitignored `android/`).
 - Renamed the app to **Harp Trainer** (`capacitor.config.json`, manifest).
 - Added the music-notes launcher icon + reproducible `apply_icons()` build step.
 - **Lit-note circles fix:** they were overlapping. Now staggered vertically by
-  chord position (`web/harp.js`, `drawHarp`: `STAGGER = 38`, a step larger than the
-  30px circle diameter, applied along the natural string-length diagonal). Also
+  chord position (`web/harp.js`, `drawHarp`: `STAGGER` kept larger than the circle
+  diameter `2*R`, applied along the natural string-length diagonal). Also
   **removed the finger numbers** and their toolbar toggle.
 - **Rewrote `README.md`** for the harp (was still describing the deleted piano).
 - **Bigger answer-grid fonts:** the 9x7 Roman-numeral matrix was small. Bumped
@@ -97,6 +97,16 @@ Android resources (those live under the gitignored `android/`).
 - **Renamed the package id** `com.musicology.rntrainer` -> `com.musicology.harptrainer`
   (edited `appId` in `capacitor.config.json`, clean-rescaffolded `android/`,
   uninstalled the old app, installed the new one).
+- **Enlarged the pedals/levers widget** for legibility (`#pedalbox` CSS): pedal
+  cells 30px -> 46px, notch glyphs 11px -> 17px, letter names 12px -> 19px.
+- **Wider harp / bigger note circles:** narrowed the answer-table column
+  (`main` grid `minmax(440px,0.72fr) 1fr`) so the harp panel is ~15% wider, and
+  bumped the green note circles (`drawHarp`: `R = 20`, name font 17, `STAGGER = 46`).
+- **Shortened the strings ~10%** (`drawHarp`: `lenBass *= 0.90`) so their ends clear
+  the enlarged pedal widget in the lower-right.
+- **Church-mode header above the table** (`buildChoices` builds `.matrix-head`):
+  each of the 7 columns is a scale degree, labelled with its major-scale mode
+  (Ion Dor Phr Lyd Mix Aeo Loc).
 
 ## Known TODOs / loose ends
 
