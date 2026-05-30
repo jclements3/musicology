@@ -187,7 +187,7 @@ Build:
 - [ ] *"The Capacitor CLI requires NodeJS >=22"*: you got Capacitor 8 somehow —
       `./build-apk.sh --clean` reinstalls the pinned v7.
 - [ ] *"INSTALL_FAILED_UPDATE_INCOMPATIBLE"*: a different build is already
-      installed — `adb uninstall com.musicology.rntrainer` then re-run.
+      installed — `adb uninstall com.musicology.harptrainer` then re-run.
 - [ ] Licenses not accepted: `sdkmanager --licenses` and accept all.
 
 App behavior:

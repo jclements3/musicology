@@ -21,8 +21,8 @@ different numerals as the key changes.
 ## The tablet
 
 - Serial: `P90YPDU16Y251200164`, ~1920x1200 landscape, Android.
-- USB-C + `adb`. The app installed on it is package id **`com.musicology.rntrainer`**,
-  drawer label **"Harp Trainer"** (the id keeps the old name — see TODOs).
+- USB-C + `adb`. The app installed on it is package id **`com.musicology.harptrainer`**,
+  drawer label **"Harp Trainer"**.
 
 ## Build & deploy (one command)
 
@@ -94,15 +94,13 @@ Android resources (those live under the gitignored `android/`).
   order `C D E F G A B`), and the notches run **flat (top) / natural (middle) /
   sharp (bottom)** (they were inverted). Canonical layout was verified against harp
   references.
+- **Renamed the package id** `com.musicology.rntrainer` -> `com.musicology.harptrainer`
+  (edited `appId` in `capacitor.config.json`, clean-rescaffolded `android/`,
+  uninstalled the old app, installed the new one).
 
 ## Known TODOs / loose ends
 
-1. **Internal app id is still `com.musicology.rntrainer`** (user-visible label is
-   correct: "Harp Trainer"). Renaming to `com.musicology.harptrainer` needs a clean
-   rescaffold (`--clean`) after editing `appId` in `capacitor.config.json`, and would
-   install as a *separate* app — uninstall the old one:
-   `adb uninstall com.musicology.rntrainer`.
-2. **Release signing:** only a debug APK exists. `--release` makes an *unsigned*
+1. **Release signing:** only a debug APK exists. `--release` makes an *unsigned*
    release APK; sign it before any Play Store path. Not needed for personal use.
 
 ## Repo layout
@@ -112,7 +110,7 @@ musicology/
 ├── HANDOFF.md               # this file
 ├── README.md                # harp trainer docs (build, theory coverage, layout)
 ├── build-apk.sh             # Capacitor build + USB install + apply_icons()
-├── capacitor.config.json    # appName "Harp Trainer", appId com.musicology.rntrainer
+├── capacitor.config.json    # appName "Harp Trainer", appId com.musicology.harptrainer
 ├── package.json             # pins @capacitor/*@^7
 ├── server.py                # Python dev server (serves web/, /api/progress)
 ├── icon-build/icon-1024.png # canonical launcher-icon master
