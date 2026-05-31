@@ -160,7 +160,7 @@
 
   // ---------------- progress / metrics ----------------
   const STORE = 'rnt_harp_v1';
-  const blank = () => ({ answered: 0, correct: 0, score: 0, xp: 0, bestStreak: 0, mastery: {}, cells: {}, unlocked: 2, updated: 0 });
+  const blank = () => ({ answered: 0, correct: 0, score: 0, xp: 0, bestStreak: 0, mastery: {}, cells: {}, unlocked: 2, tick: 0, updated: 0 });
   let progress = load();
   function load() {
     try { const r = localStorage.getItem(STORE); if (r) return Object.assign(blank(), JSON.parse(r)); } catch (e) {}
@@ -265,14 +265,19 @@
     return null;
   }
 
-  // Spaced-repetition: bias selection toward WEAK chords (low accuracy) and
-  // freshly-unlocked ones, so practice concentrates where it's needed while
-  // mastered chords still recur for review (never dropped).
+  // Spaced-repetition: bias selection toward WEAK chords (low accuracy), STALE
+  // chords (not seen in a while), and freshly-unlocked ones, so practice
+  // concentrates where it's needed while mastered chords still recur for review.
   function cellWeight(shape, deg) {
-    const m = progress.cells[cellKey(shape, deg)] || { seen: 0, correct: 0 };
-    if (m.seen === 0) return 5;            // just unlocked / never tried -> drill it
-    const acc = m.correct / m.seen;
-    return 1 + (1 - acc) * 4;              // mastered ~1x weight, never-right ~5x
+    const m = progress.cells[cellKey(shape, deg)] || { seen: 0, correct: 0, last: 0 };
+    if (m.seen === 0) return 6;            // just unlocked / never tried -> top priority
+    // accuracy term: mastered ~1x weight, never-right ~5x
+    let w = 1 + (1 - m.correct / m.seen) * 4;
+    // staleness term: how overdue this chord is vs. the average (set-size) interval.
+    // overdue 1 = seen about as recently as average; >1 adds up to +4.5.
+    const n = activeCells().length;
+    const overdue = n ? ((progress.tick || 0) - (m.last || 0)) / n : 0;
+    return w + Math.min(Math.max(overdue - 1, 0), 3) * 1.5;
   }
   let lastCellKey = null;                  // so the same chord never repeats back-to-back
   function chooseCell() {
@@ -297,7 +302,12 @@
       notes = chordStrings(scale, bassDeg, shape);
     }
     if (!notes) { shape = '33'; bassDeg = 0; notes = chordStrings(scale, 0, '33'); }
-    lastCellKey = cellKey(shape, bassDeg);
+    // mark this chord as just-seen (drives the staleness term + no-repeat guard)
+    const ck = cellKey(shape, bassDeg);
+    progress.tick = (progress.tick || 0) + 1;
+    if (!progress.cells[ck]) progress.cells[ck] = { seen: 0, correct: 0 };
+    progress.cells[ck].last = progress.tick;
+    lastCellKey = ck;
     const answer = ROMAN[shape][bassDeg];
     current = { keyName, scale, shape, bassDeg, notes, answer, answered: false };
     session.t0 = performance.now();
