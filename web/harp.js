@@ -209,6 +209,7 @@
     session.t0 = performance.now();
     drawPedals(scale, keyName);
     drawHarp(notes);
+    drawStaff(notes, scale, keyName);
     buildChoices(shape, bassDeg);
     showHint();
     hideHintPanel();        // the on-demand Hint panel dismisses on next exercise
@@ -384,6 +385,75 @@
         '<div class="pname">' + letter + '</div>';
       wrap.appendChild(cell);
     });
+  }
+
+  // ---------------- left-strip music staff (no clefs) ----------------
+  // A grand-staff-range staff spanning C2..G6, drawn WITHOUT treble/bass clefs.
+  // The vertical axis is the same diatonic index as the strings (sidx 0 = C2 at
+  // the bottom .. 32 = G6 at the top). Even sidx = a line position, odd = a
+  // space. The two five-line staves are bass sidx 4..12 and treble sidx 16..24;
+  // every other position (below, between, above) uses ledger lines. The current
+  // chord's notes are drawn as open whole-notes; the key's sharps/flats are drawn
+  // as a key signature on both staves (standard placement).
+  const STAFF_BASS = [4, 6, 8, 10, 12];      // G2 B2 D3 F3 A3
+  const STAFF_TREBLE = [16, 18, 20, 22, 24]; // E4 G4 B4 D5 F5
+  // standard key-signature sidx positions: [bass-staff, treble-staff]
+  const KEYSIG_SHARP = { F: [10, 24], C: [7, 21], G: [11, 25], D: [8, 22], A: [5, 19], E: [9, 23] };
+  const KEYSIG_FLAT = { B: [6, 20], E: [9, 23], A: [5, 19], D: [8, 22], G: [11, 25], C: [7, 21] };
+  const SHARP_ORDER = ['F', 'C', 'G', 'D', 'A', 'E', 'B'];
+  const FLAT_ORDER = ['B', 'E', 'A', 'D', 'G', 'C', 'F'];
+  // The visible staff spans C2 (sidx 0) .. G7 (sidx 39). Chords only ever reach
+  // G6 (sidx 32, the top harp string); the headroom up to G7 is shown as ledger
+  // ladder so the top of the column reads as real pitches, not blank space.
+  const ST_MAXSIDX = 39;
+  const ST_STEP = 18, ST_TOPPAD = 18, ST_W = 124, ST_H = ST_TOPPAD * 2 + ST_MAXSIDX * ST_STEP;
+  const ST_NOTEX = 92, ST_LED = 18;   // ledger half-width (short, centred on the note column)
+  const yAt = (sidx) => ST_TOPPAD + (ST_MAXSIDX - sidx) * ST_STEP;
+  // every ledger position (even sidx outside the two staves): below the bass,
+  // the middle-C line, and above the treble up to G7. Drawn as short dashes.
+  const LEDGER_GUIDE = [0, 2, 14, 26, 28, 30, 32, 34, 36, 38];
+
+  function drawStaff(notes, scale, keyName) {
+    const svg = $('staffSvg');
+    if (!svg) return;
+    svg.setAttribute('viewBox', '0 0 ' + ST_W + ' ' + ST_H);
+    const L = 8, R = ST_W - 8;
+    const hline = (sidx, x1, x2) =>
+      '<line x1="' + x1 + '" y1="' + yAt(sidx) + '" x2="' + x2 + '" y2="' + yAt(sidx) +
+      '" stroke="#b59a68" stroke-width="1.4"/>';
+    let s = '';
+    // short dashed ledger ladder at every off-staff position (full C2..G7 range)
+    LEDGER_GUIDE.forEach((p) => {
+      s += '<line x1="' + (ST_NOTEX - ST_LED) + '" y1="' + yAt(p) + '" x2="' + (ST_NOTEX + ST_LED) +
+        '" y2="' + yAt(p) + '" stroke="#8a734a" stroke-width="1.4" stroke-dasharray="3 3"/>';
+    });
+    STAFF_BASS.forEach((p) => { s += hline(p, L, R); });
+    STAFF_TREBLE.forEach((p) => { s += hline(p, L, R); });
+
+    // key signature: each accidental drawn on BOTH staves at its standard spot
+    if (scale) {
+      const present = {};
+      scale.forEach((n) => { if (n.acc) present[n.letter] = n.acc; });
+      const sharps = SHARP_ORDER.filter((l) => present[l] === '#');
+      const flats = FLAT_ORDER.filter((l) => present[l] === 'b');
+      let kx = 16;
+      const glyph = (sym, sidx, x) =>
+        '<text x="' + x + '" y="' + (yAt(sidx) + 8) + '" font-size="27" text-anchor="middle"' +
+        ' fill="#e0c989" font-family="serif">' + sym + '</text>';
+      sharps.forEach((l) => { const pos = KEYSIG_SHARP[l]; s += glyph('♯', pos[0], kx) + glyph('♯', pos[1], kx); kx += 13; });
+      flats.forEach((l) => { const pos = KEYSIG_FLAT[l]; s += glyph('♭', pos[0], kx) + glyph('♭', pos[1], kx); kx += 13; });
+    }
+
+    // whole notes for the chord (ledger positions are already drawn as the ladder)
+    (notes || []).forEach((n) => {
+      const cy = yAt(n.sidx);
+      s += '<ellipse cx="' + ST_NOTEX + '" cy="' + cy + '" rx="10.5" ry="7.6" fill="none"' +
+        ' stroke="#fff7e6" stroke-width="2.6" transform="rotate(-18 ' + ST_NOTEX + ' ' + cy + ')"/>';
+    });
+
+    svg.innerHTML = s;
+    const kl = $('staffKey');
+    if (kl) kl.textContent = keyName ? 'Key of ' + fix(keyName) : '';
   }
 
   // ---------------- harp string board (SVG) ----------------

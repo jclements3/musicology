@@ -18,7 +18,40 @@ different numerals as the key changes.
 > the harp (it was promoted from the old `web/harp.html`). If you see piano
 > references lingering (see TODOs), they're leftovers.
 
-## Latest session — sung-solfa HINT feature + bottom-bar redesign
+## Latest session — left strip with a clefless C2–G7 staff
+
+The brand title ("Harp Shape-Chords") was **removed** from the top bar to free
+horizontal room, and a **160px left strip** was added as a third `main` grid
+column (`grid-template-columns:160px minmax(...) 1fr`, mirrored in the
+`<=1280px` media query that the tablet actually renders). The chord table + hint
+narrowed to fit beside it; **font size was not changed** — on the tablet the
+table runs ~74px columns, tight but the widest 4-glyph labels still fit.
+
+The strip holds a **music staff** — `#staffSvg`, drawn by `drawStaff(notes,
+scale, keyName)` in `harp.js`, called from `newQuestion()` right after
+`drawHarp()`:
+
+- **Clefless grand-staff range C2..G7**, vertical (low at the bottom, high at
+  the top). It reuses the strings' own diatonic index (`sidx`: 0 = C2 .. 32 =
+  G6, extended to 39 = G7) so the staff can never drift out of sync with the lit
+  harp strings. Even sidx = a line, odd = a space. Bass staff = sidx 4..12
+  (G2..A3), treble = 16..24 (E4..F5), drawn as solid lines; **no clef glyphs**.
+- **Short dashed ledger ladder** at every off-staff line position
+  (`LEDGER_GUIDE = [0,2,14,26,28,30,32,34,36,38]`): C2/E2 below the bass staff,
+  middle C in the gap, and A5..F7 above the treble. Drawn as short dashes centred
+  on the note column so the empty extremes still read as real pitches. Chords
+  never exceed **G6** (the top harp string); G6..G7 is pure headroom shown as
+  ladder.
+- **Whole notes** (open, slightly tilted ellipses, no stems) for the current
+  chord, sitting on the ladder.
+- **Key signature** from `current.scale`: sharps in F-C-G-D-A order, flats in
+  B-E-A-D-G order, each placed at its standard spot on BOTH staves
+  (`KEYSIG_SHARP` / `KEYSIG_FLAT` hold the `[bass, treble]` sidx). The strip
+  title shows the key — the only clef substitute.
+
+Exercise/scoring logic is still untouched by this session's work.
+
+## Previous session — sung-solfa HINT feature + bottom-bar redesign
 
 A tap-to-sing **Hint** was added and the chrome was reflowed to give the chord
 table and the hint more room. All of this is in `web/` (the Capacitor bundle);
