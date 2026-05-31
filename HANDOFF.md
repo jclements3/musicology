@@ -18,7 +18,7 @@ different numerals as the key changes.
 > the harp (it was promoted from the old `web/harp.html`). If you see piano
 > references lingering (see TODOs), they're leftovers.
 
-## Latest session — Koch gating by SOLFA CHORD + interleaved curriculum, staff/UI polish
+## Latest session — solfa-cell Koch gating, interleaved curriculum, spaced repetition, staff/UI polish
 
 Koch-method progression, but the gated unit is a **solfa sequence**, not a hand
 shape. The unit is a single **(shape, degree) CELL** of the matrix — e.g. `(33,0)`
@@ -30,8 +30,10 @@ quizzed 7 cells per shape = too many sequences at once.) All logic in `web/harp.
 
 - **State:** `progress.unlocked` (count of unlocked cells, persisted in `progress`
   / localStorage `rnt_harp_v1`, default **2**; `Reset` → `blank()` resets it).
-  Per-cell stats live in `progress.cells['shape:deg'] = {seen, correct}` (separate
-  from the legacy per-shape `progress.mastery`, which the retired text hint used).
+  Per-cell stats live in `progress.cells['shape:deg'] = {seen, correct, last}`
+  (`last` = the `progress.tick` value when that chord was last shown; `progress.tick`
+  is a global question counter — both feed spaced repetition). Separate from the
+  legacy per-shape `progress.mastery`, which the retired text hint used.
 - **Unlock order — INTERLEAVED, GENTLE RAMP** (`SOLFA_CURRICULUM`, built from
   `DT`/`D7`/`WEAVE`/`roundRobin`, not a flat list): within each inversion tier the
   triad family and the 7th family are *woven* (`WEAVE` = two triads lead, then
@@ -45,10 +47,16 @@ quizzed 7 cells per shape = too many sequences at once.) All logic in `web/harp.
   **every active cell has ≥10 attempts (`UNLOCK_MIN`) AND the active set's combined
   accuracy is ≥90% (`UNLOCK_ACC`)**, using `progress.cells`. The new cell starts at
   0 attempts so the gate re-arms.
-- **Quizzing:** `newQuestion()` picks a random active **cell** via `quizCells()`
-  (active set narrowed by the Triads/7ths/Quartal checkboxes; falls back to the
-  full active set). `activeCells()` / `isActiveCell(shape,deg)` drive selection +
-  graying. Locked cells are never the lit chord.
+- **Quizzing — SPACED REPETITION (`chooseCell()`):** `newQuestion()` picks among
+  the active cells (`quizCells()` = active set narrowed by the Triads/7ths/Quartal
+  checkboxes) by **weighted** random, not uniform. `cellWeight()` = an accuracy term
+  (`1 + (1-acc)*4`: mastered ~1×, never-right ~5×, brand-new = 6) **plus** a
+  staleness term (up to +4.5 when a chord is overdue vs. the average set-size
+  interval, computed from `tick - cell.last`). The immediately-previous chord is
+  excluded (`lastCellKey`) so nothing repeats back-to-back. Net effect: weak + stale
+  + new chords float up, mastered ones still recur for review (max gap bounded),
+  nothing is ever dropped. `activeCells()` / `isActiveCell(shape,deg)` drive graying;
+  locked cells are never the lit chord.
 - **Cell-level gray-out:** `buildChoices()` adds `locked` + `disabled` to every
   cell NOT in `activeCells()` (so early on only 2 cells are live; the other 61 are
   hatched). `.ans.locked` (index.html) = dim diagonal hatch, no hover/click.
@@ -68,6 +76,11 @@ This session's other changes (all verified on the tablet):
 - **Church-mode header moved BELOW the table:** `buildChoices` now appends
   `.matrix-head` (Ion..Loc) after the `.matrix` (above the hint strip);
   `.matrix-head` margin flipped to `margin-top`.
+- **Crash-proof loop:** auto-advance and Skip route through `nextQuestion()`, which
+  retries `newQuestion()` if it throws, so a render error can never freeze the drill
+  after a scored answer. (Added in response to a "scored but didn't advance" report;
+  a hard stall could not be reproduced — at the 2-cell stage only safe `33` triads
+  render — but this makes the loop crash-proof regardless.)
 
 > The unlock *transition* is logic- and syntax-verified but not exercised on-device
 > (needs ≥90% over ≥10 attempts on each active cell). The modal/function "second
