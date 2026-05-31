@@ -18,42 +18,63 @@ different numerals as the key changes.
 > the harp (it was promoted from the old `web/harp.html`). If you see piano
 > references lingering (see TODOs), they're leftovers.
 
-## Latest session — Koch-style shape gating (gray out all but 2 until proficient)
+## Latest session — Koch gating by SOLFA CHORD + interleaved curriculum, staff/UI polish
 
-The trainer now starts the learner with only **2 of the 9 hand-shapes unlocked**
-and earns the rest one at a time, Koch-method style (small alphabet, full tempo,
-widen the set as recognition becomes automatic — never slow the chord itself).
-All logic is in `web/harp.js`; the gray-out styling is in `web/index.html`.
+Koch-method progression, but the gated unit is a **solfa sequence**, not a hand
+shape. The unit is a single **(shape, degree) CELL** of the matrix — e.g. `(33,0)`
+is "Do-Mi-So" in every key (movable-do), `(33,1)` is "Re-Fa-La". The learner
+starts with just **two dissimilar, simple sequences** — `I` (Do-Mi-So, major) and
+`ii` (Re-Fa-La, minor) — and earns the rest one at a time. Full tempo always; only
+the *set of sequences* widens. (This replaced an earlier shape-row gating, which
+quizzed 7 cells per shape = too many sequences at once.) All logic in `web/harp.js`.
 
-- **State:** `progress.unlocked` (persisted in the `progress` object / localStorage
-  `rnt_harp_v1`, default **2**; `Reset` clears it back to 2 since `blank()` sets it).
-- **Order:** `UNLOCK_ORDER = ['33','333','34','43','332','323','233','44','444']`.
-  `activeShapes()` = the first `unlocked` of that list. Start pair = `33` (root
-  triad) + `333` (root 7th) — distinguishable by note count.
-- **Unlock gate (`checkUnlock()`, called from `answer()`):** the next shape
-  unlocks once **every** currently-active shape has **≥10 attempts**
-  (`UNLOCK_MIN`) AND the active set's combined accuracy is **≥90%** (`UNLOCK_ACC`),
-  using the existing cumulative `progress.mastery[shape] = {seen, correct}`. The
-  newly-unlocked shape starts at 0 attempts so the gate re-arms automatically.
-- **Quizzing:** `newQuestion()` now picks from `quizShapes()` = the unlocked set
-  narrowed by the Triads/7ths/Quartal checkboxes (falls back to the full unlocked
-  set if the checkboxes would empty it). Locked shapes are **never** the lit chord.
-- **Matrix gray-out:** `buildChoices()` adds class `locked` + `disabled` to every
-  cell whose shape isn't active. `.ans.locked` (in index.html) is a dim diagonal
-  hatch, `cursor:not-allowed`, no hover. The correct cell is always in an active
-  row, so locked never collides with the green/red highlight.
-- **Feedback:** a "🔓 New shape unlocked: …" banner is appended to `#reveal` on the
-  answer that crosses the gate (delay stretched to ≥2.8s to read it), and a
-  **Shapes N/9** HUD tile (`#shapes`, updated in `updateHud()`) shows progress.
+- **State:** `progress.unlocked` (count of unlocked cells, persisted in `progress`
+  / localStorage `rnt_harp_v1`, default **2**; `Reset` → `blank()` resets it).
+  Per-cell stats live in `progress.cells['shape:deg'] = {seen, correct}` (separate
+  from the legacy per-shape `progress.mastery`, which the retired text hint used).
+- **Unlock order — INTERLEAVED, GENTLE RAMP** (`SOLFA_CURRICULUM`, built from
+  `DT`/`D7`/`WEAVE`/`roundRobin`, not a flat list): within each inversion tier the
+  triad family and the 7th family are *woven* (`WEAVE` = two triads lead, then
+  triad/7th alternate; `DT`/`D7` are per-family degree orders offset so a triad and
+  its own 7th never land adjacent). Tiers run root → 1st-inv → 2nd-inv; the hardest
+  tier round-robins the 3rd-inversion 7ths (`233`, no triad partner) with the
+  quartals (`44`/`444`). **No shape repeats >2 in a row.** Opens: I, ii, V7, vii°,
+  vi7, IV, IΔ, V, ii7, … — all core triad qualities + common 7ths met in the first
+  ~dozen. Retune via the three small pieces (DT/D7/WEAVE + the tier list).
+- **Unlock gate (`checkUnlock()` in `answer()`):** the next cell unlocks once
+  **every active cell has ≥10 attempts (`UNLOCK_MIN`) AND the active set's combined
+  accuracy is ≥90% (`UNLOCK_ACC`)**, using `progress.cells`. The new cell starts at
+  0 attempts so the gate re-arms.
+- **Quizzing:** `newQuestion()` picks a random active **cell** via `quizCells()`
+  (active set narrowed by the Triads/7ths/Quartal checkboxes; falls back to the
+  full active set). `activeCells()` / `isActiveCell(shape,deg)` drive selection +
+  graying. Locked cells are never the lit chord.
+- **Cell-level gray-out:** `buildChoices()` adds `locked` + `disabled` to every
+  cell NOT in `activeCells()` (so early on only 2 cells are live; the other 61 are
+  hatched). `.ans.locked` (index.html) = dim diagonal hatch, no hover/click.
+- **Feedback:** a "🔓 New solfa chord unlocked: <Roman> · <solfa>" banner is
+  appended to `#reveal` on the gate-crossing answer (delay ≥2.8s); HUD tile
+  **Solfa N/63** (`#shapes`, label "Solfa").
 
-> Verified on the tablet: default state shows exactly rows `33` and `333` active,
-> the other 7 hatched/disabled, HUD "Shapes 2/9", and exercises only land on the
-> active shapes. The *unlock transition* is logic- and syntax-verified but not
-> exercised on-device (needs ≥90% over ≥10 attempts on each active shape).
-> The modal/function "second pass" relabeling layer from the fuller pedagogy
-> spec was intentionally **not** built — only the shape-gating was requested.
+This session's other changes (all verified on the tablet):
 
-## Previous session — left strip with a clefless C2–G7 staff
+- **Staff notehead collision fix** (`drawStaff`): shapes `332`/`323`/`233` contain
+  two chord tones a diatonic SECOND apart (the `'2'` digit). At `ST_STEP`=18px vs a
+  ~18px notehead, they overlapped. Now the notes are sorted by `sidx` and the upper
+  note of any second is offset +17px (side-by-side, standard notation).
+- **Strings −5%:** `drawHarp` `lenBass` factor 0.90 → **0.855**.
+- **Pedal widget title removed:** the "PEDALS / LEVERS" label + its `.pedaltitle`
+  CSS are gone, so the widget is more compact in the lower-right.
+- **Church-mode header moved BELOW the table:** `buildChoices` now appends
+  `.matrix-head` (Ion..Loc) after the `.matrix` (above the hint strip);
+  `.matrix-head` margin flipped to `margin-top`.
+
+> The unlock *transition* is logic- and syntax-verified but not exercised on-device
+> (needs ≥90% over ≥10 attempts on each active cell). The modal/function "second
+> pass" relabeling layer from the fuller pedagogy spec is still intentionally NOT
+> built.
+
+## Earlier this session — left strip with a clefless C2–G7 staff
 
 The brand title ("Harp Shape-Chords") was **removed** from the top bar to free
 horizontal room, and a **160px left strip** was added as a third `main` grid

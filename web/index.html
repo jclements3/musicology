@@ -35,8 +35,6 @@
     #pedalbox{position:absolute;right:16px;bottom:14px;background:rgba(243,234,215,0.94);
       border:1px solid var(--rule);border-radius:11px;padding:9px 13px 11px;
       box-shadow:0 2px 8px rgba(0,0,0,0.18);}
-    #pedalbox .pedaltitle{font-size:13px;text-transform:uppercase;letter-spacing:.7px;
-      color:#8a734a;font-weight:700;text-align:center;margin-bottom:7px;}
     #pedals{display:flex;gap:6px;align-items:stretch;}
     .pedalgap{width:0;border-left:1px solid var(--rule);margin:3px 5px;}
     .pedal{background:#fffaf0;border:1px solid var(--rule);border-radius:8px;width:46px;
@@ -72,7 +70,7 @@
     .left{display:flex;flex-direction:column;gap:6px;min-height:0;height:100%;position:relative;}
     #answers{flex:1;min-height:0;display:flex;flex-direction:column;}
     .matrix-head{display:grid;grid-template-columns:repeat(7,1fr);width:100%;
-      flex:none;margin-bottom:3px;padding:0 1px;}
+      flex:none;margin-top:4px;padding:0 1px;}
     .mhead{text-align:center;font-size:13px;font-weight:700;color:#9a824f;
       text-transform:uppercase;letter-spacing:.6px;}
 
@@ -208,7 +206,7 @@
         <div class="it"><span class="lab">Acc</span><span class="val" id="acc">–</span></div>
         <div class="it"><span class="lab">Done</span><span class="val" id="answered">0</span></div>
         <div class="it"><span class="lab">Best</span><span class="val" id="best">0</span></div>
-        <div class="it"><span class="lab">Shapes</span><span class="val" id="shapes">2/9</span></div>
+        <div class="it"><span class="lab">Solfa</span><span class="val" id="shapes">2/63</span></div>
       </div>
       <button class="iconbtn" id="play" title="Play the lit chord">▶ Play</button>
       <button class="iconbtn gold" id="skip" title="Next exercise">Skip / Next</button>
@@ -242,7 +240,6 @@
       <div class="right">
         <div id="harp"><div id="stringlayer"></div>
           <div id="pedalbox" title="Pedal / lever positions for this key">
-            <div class="pedaltitle">Pedals / Levers</div>
             <div id="pedals"></div>
           </div>
         </div>

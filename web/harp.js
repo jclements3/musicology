@@ -160,7 +160,7 @@
 
   // ---------------- progress / metrics ----------------
   const STORE = 'rnt_harp_v1';
-  const blank = () => ({ answered: 0, correct: 0, score: 0, xp: 0, bestStreak: 0, mastery: {}, unlocked: 2, updated: 0 });
+  const blank = () => ({ answered: 0, correct: 0, score: 0, xp: 0, bestStreak: 0, mastery: {}, cells: {}, unlocked: 2, updated: 0 });
   let progress = load();
   function load() {
     try { const r = localStorage.getItem(STORE); if (r) return Object.assign(blank(), JSON.parse(r)); } catch (e) {}
@@ -193,40 +193,74 @@
     return s.length ? s : SHAPE_GROUPS.triads;
   }
 
-  // ---- Koch-style progression: gray out all but the unlocked shapes ----------
-  // The 9 hand-shapes are the "alphabet". The learner starts with 2 unlocked and
-  // earns the rest one at a time (in UNLOCK_ORDER): a new shape unlocks once every
-  // currently-active shape has >= UNLOCK_MIN attempts AND the active set's overall
-  // accuracy is >= UNLOCK_ACC. Locked shapes show grayed-out in the matrix and are
-  // never quizzed. Drill stays at full tempo -- only the *set* widens (Koch), not
-  // the chord speed.
-  const UNLOCK_ORDER = ['33', '333', '34', '43', '332', '323', '233', '44', '444'];
+  // ---- Koch-style progression: gray out all but the unlocked SOLFA CHORDS -----
+  // The learnable unit is a movable-do solfa SEQUENCE, i.e. a single (shape,degree)
+  // CELL of the matrix -- e.g. (33,0) is "Do-Mi-So" in every key, (33,1) is
+  // "Re-Fa-La". The emphasis is the solfa sequence, not the shape. The learner
+  // starts with just TWO dissimilar, simple sequences (I = Do-Mi-So major, ii =
+  // Re-Fa-La minor) and earns the rest one at a time. Locked cells are grayed and
+  // never quizzed. Drill stays at full tempo -- only the *set of sequences* widens
+  // (Koch), never the chord speed.
+  //
+  // INTERLEAVED, GENTLE RAMP unlock order. Within each inversion tier the triad
+  // family and the 7th family are WOVEN together (two triads lead, then triad/7th
+  // alternate) so neighbours contrast in note-count + quality and a 7th shows up
+  // early. Tiers run root -> 1st-inv -> 2nd-inv, then the hardest tier round-robins
+  // the 3rd-inversion 7ths (233, which has no triad partner) with the quartals
+  // (44/444, the most foreign sound). No shape ever repeats more than twice in a
+  // row. DT/D7 are the per-family degree orders (offset so a triad and its own 7th
+  // never land adjacent); WEAVE is the 14-slot triad/7th pattern per tier.
+  const DT = [0, 1, 6, 3, 4, 5, 2];   // triad-family degree order
+  const D7 = [4, 5, 0, 1, 6, 3, 2];   // 7th-family degree order (offset from DT)
+  const WEAVE = ['T', 'T', 'S', 'T', 'S', 'T', 'S', 'T', 'S', 'T', 'S', 'T', 'S', 'S'];
+  function weaveTier(triadShape, sevShape) {
+    const out = []; let ti = 0, si = 0;
+    WEAVE.forEach((slot) => out.push(slot === 'T' ? [triadShape, DT[ti++]] : [sevShape, D7[si++]]));
+    return out;
+  }
+  function roundRobin(...streams) {
+    const out = [], m = Math.max(...streams.map((s) => s.length));
+    for (let i = 0; i < m; i++) streams.forEach((s) => { if (i < s.length) out.push(s[i]); });
+    return out;
+  }
+  const SOLFA_CURRICULUM = [            // [ [shape,deg], ... ] in unlock order
+    ...weaveTier('33', '333'),          // root position: triads + root 7ths
+    ...weaveTier('34', '332'),          // 1st inversion
+    ...weaveTier('43', '323'),          // 2nd inversion
+    ...roundRobin(D7.map((d) => ['233', d]), DT.map((d) => ['44', d]), D7.map((d) => ['444', d])),
+  ];                                    // hardest tier: 3rd-inv 7ths woven with quartals
   const UNLOCK_ACC = 0.90, UNLOCK_MIN = 10;
-  function activeShapes() {
-    const n = Math.max(2, Math.min(UNLOCK_ORDER.length, progress.unlocked || 2));
-    return UNLOCK_ORDER.slice(0, n);
+  const cellKey = (shape, deg) => shape + ':' + deg;
+  // the movable-do solfa sequence (bottom->top) for a (shape,degree) cell
+  function solfaSeqOf(shape, bassDeg) {
+    return shapeSteps(shape).map((off) => SOLFA[(bassDeg + off) % 7]).join('-');
   }
-  // shapes actually quizzed = unlocked set narrowed by the group checkboxes
+  function activeCells() {
+    const n = Math.max(2, Math.min(SOLFA_CURRICULUM.length, progress.unlocked || 2));
+    return SOLFA_CURRICULUM.slice(0, n);
+  }
+  const isActiveCell = (shape, deg) => activeCells().some((c) => c[0] === shape && c[1] === deg);
+  // cells actually quizzed = unlocked set narrowed by the group checkboxes
   // (falls back to the full unlocked set if the checkboxes would empty it).
-  function quizShapes() {
-    const act = activeShapes();
-    const inter = enabledShapes().filter((s) => act.includes(s));
-    return inter.length ? inter : act;
+  function quizCells() {
+    const en = enabledShapes();
+    const inter = activeCells().filter((c) => en.includes(c[0]));
+    return inter.length ? inter : activeCells();
   }
-  // If this answer crossed the proficiency gate, bump the unlock count and return
-  // the newly-unlocked shape label; otherwise null. The new shape starts at 0
-  // attempts, so the gate naturally re-arms before the next unlock.
+  // If this answer crossed the proficiency gate, unlock the next solfa chord and
+  // return its [shape,deg]; otherwise null. The new cell starts at 0 attempts, so
+  // the gate naturally re-arms before the next unlock.
   function checkUnlock() {
-    if ((progress.unlocked || 2) >= UNLOCK_ORDER.length) return null;
+    if ((progress.unlocked || 2) >= SOLFA_CURRICULUM.length) return null;
     let seen = 0, corr = 0;
-    for (const s of activeShapes()) {
-      const m = progress.mastery[s] || { seen: 0, correct: 0 };
+    for (const [sh, d] of activeCells()) {
+      const m = progress.cells[cellKey(sh, d)] || { seen: 0, correct: 0 };
       if (m.seen < UNLOCK_MIN) return null;
       seen += m.seen; corr += m.correct;
     }
     if (seen && corr / seen >= UNLOCK_ACC) {
       progress.unlocked = (progress.unlocked || 2) + 1;
-      return UNLOCK_ORDER[progress.unlocked - 1];
+      return SOLFA_CURRICULUM[progress.unlocked - 1];
     }
     return null;
   }
@@ -234,11 +268,11 @@
   function newQuestion() {
     const keyName = settings.key === 'random' ? pick(KEY_ORDER) : settings.key;
     const scale = parseScale(keyName);
-    const shapes = quizShapes();
+    const cells = quizCells();
     let notes = null, shape = null, bassDeg = 0, guard = 0;
-    while (!notes && guard++ < 40) {
-      shape = pick(shapes);
-      bassDeg = Math.floor(Math.random() * 7);
+    while (!notes && guard++ < 60) {
+      const c = pick(cells);
+      shape = c[0]; bassDeg = c[1];
       notes = chordStrings(scale, bassDeg, shape);
     }
     if (!notes) { shape = '33'; bassDeg = 0; notes = chordStrings(scale, 0, '33'); }
@@ -482,11 +516,20 @@
       flats.forEach((l) => { const pos = KEYSIG_FLAT[l]; s += glyph('♭', pos[0], kx) + glyph('♭', pos[1], kx); kx += 13; });
     }
 
-    // whole notes for the chord (ledger positions are already drawn as the ladder)
-    (notes || []).forEach((n) => {
+    // whole notes for the chord (ledger positions are already drawn as the ladder).
+    // When two notes are a diatonic SECOND apart (adjacent sidx -> only ST_STEP px,
+    // which is less than a notehead's height), offset the upper one to the right so
+    // they sit side by side, as in standard notation. Shapes 332/323/233 (inverted
+    // 7ths) contain such a second.
+    const ord = (notes || []).slice().sort((a, b) => a.sidx - b.sidx);
+    let prevSidx = -99, prevOffset = false;
+    ord.forEach((n) => {
+      const offset = (n.sidx - prevSidx === 1) && !prevOffset;   // upper note of a 2nd
+      const cx = ST_NOTEX + (offset ? 17 : 0);
       const cy = yAt(n.sidx);
-      s += '<ellipse cx="' + ST_NOTEX + '" cy="' + cy + '" rx="10.5" ry="7.6" fill="none"' +
-        ' stroke="#fff7e6" stroke-width="2.6" transform="rotate(-18 ' + ST_NOTEX + ' ' + cy + ')"/>';
+      s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="10.5" ry="7.6" fill="none"' +
+        ' stroke="#fff7e6" stroke-width="2.6" transform="rotate(-18 ' + cx + ' ' + cy + ')"/>';
+      prevSidx = n.sidx; prevOffset = offset;
     });
 
     svg.innerHTML = s;
@@ -502,9 +545,9 @@
     const marginX = 46, topY = 26, botPad = 70;
     const n = STRINGS.length;
     const gap = (W - 2 * marginX) / (n - 1);
-    // 0.90 = shorten all strings ~10% so their bottom ends clear the (enlarged)
-    // pedal/lever widget overlaid in the lower-right of the canvas.
-    const lenBass = (H - topY - botPad) * 0.90, lenTreble = lenBass * 0.46;
+    // 0.855 = shorten all strings ~14.5% so their bottom ends clear the (enlarged)
+    // pedal/lever widget overlaid in the lower-right of the canvas (was 0.90; -5%).
+    const lenBass = (H - topY - botPad) * 0.855, lenTreble = lenBass * 0.46;
 
     const hi = {};
     (highlight || []).forEach((h, i) => { hi[h.sidx] = { note: h, order: i, total: highlight.length }; });
@@ -581,16 +624,16 @@
       c.textContent = m;
       head.appendChild(c);
     });
-    box.appendChild(head);
 
     const table = document.createElement('div');
     table.className = 'matrix';
     table.style.gridTemplateColumns = 'repeat(7, 1fr)';
 
-    const act = activeShapes();
+    const act = activeCells();
+    const isAct = (sh, d) => act.some((c) => c[0] === sh && c[1] === d);
     rows.forEach((shape, ri) => {
-      const locked = !act.includes(shape);   // not yet unlocked -> grayed, unclickable
       for (let d = 0; d < 7; d++) {
+        const locked = !isAct(shape, d);   // this solfa chord not yet unlocked -> grayed
         const b = document.createElement('button');
         b.className = 'ans' + (ri % 2 ? ' odd' : '') + (locked ? ' locked' : '');
         b.innerHTML = romanHTML(ROMAN[shape][d]);
@@ -602,6 +645,7 @@
       }
     });
     box.appendChild(table);
+    box.appendChild(head);   // church-mode labels now sit BELOW the table (above the hint)
   }
 
   function answer(chosenShape, chosenDeg, btn, correctShape, correctDeg) {
@@ -614,11 +658,16 @@
     const key = current.shape;
     if (!progress.mastery[key]) progress.mastery[key] = { seen: 0, correct: 0 };
     progress.mastery[key].seen++;
+    // per-solfa-chord (cell) stats drive the Koch unlock gate
+    const ck = cellKey(current.shape, current.bassDeg);
+    if (!progress.cells[ck]) progress.cells[ck] = { seen: 0, correct: 0 };
+    progress.cells[ck].seen++;
 
     if (ok) {
       session.streak++;
       progress.correct++;
       progress.mastery[key].correct++;
+      progress.cells[ck].correct++;
       const gained = 10 + Math.min(session.streak, 10) * 2;
       progress.score += gained; progress.xp += gained;
       if (session.streak > progress.bestStreak) progress.bestStreak = session.streak;
@@ -644,10 +693,12 @@
       ' &nbsp;<span class="muted">(' + current.notes.map((x) => fix(x.letter + x.acc) + x.octave).join(' ') + ')</span>';
 
     // Koch unlock: did this answer cross the proficiency gate for the active set?
-    const unlockedShape = checkUnlock();
-    if (unlockedShape) {
-      $('reveal').innerHTML += '<div class="unlock">🔓 New shape unlocked: <b>' + unlockedShape +
-        '</b> &middot; ' + SHAPE_KIND[unlockedShape] + ' &nbsp;(' + activeShapes().length + '/9)</div>';
+    const unlockedCell = checkUnlock();
+    if (unlockedCell) {
+      const [ush, ud] = unlockedCell;
+      $('reveal').innerHTML += '<div class="unlock">🔓 New solfa chord unlocked: <b>' +
+        romanHTML(ROMAN[ush][ud]) + '</b> &middot; ' + solfaSeqOf(ush, ud) +
+        ' &nbsp;(' + activeCells().length + '/' + SOLFA_CURRICULUM.length + ')</div>';
     }
 
     save();
@@ -662,7 +713,7 @@
       showHintPanel(settings.sound);
       delay = settings.sound ? (current.notes.length + 1) * 760 + 2000 : 3200;
     }
-    if (unlockedShape) delay = Math.max(delay, 2800);   // hold so the unlock is readable
+    if (unlockedCell) delay = Math.max(delay, 2800);   // hold so the unlock is readable
     setTimeout(newQuestion, delay);
   }
 
@@ -676,7 +727,7 @@
     $('acc').textContent = progress.answered ? Math.round(progress.correct / progress.answered * 100) + '%' : '–';
     $('best').textContent = progress.bestStreak;
     $('answered').textContent = progress.answered;
-    const sh = $('shapes'); if (sh) sh.textContent = activeShapes().length + '/9';
+    const sh = $('shapes'); if (sh) sh.textContent = activeCells().length + '/' + SOLFA_CURRICULUM.length;
   }
 
   // ---------------- wiring ----------------
