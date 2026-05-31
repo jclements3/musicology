@@ -1,0 +1,75 @@
+X: 0
+T: 000 Romanesca Drills (8-bar, all 7 degrees)
+C: Johann Pachelbel (1653–1706)
+N: Grand-staff drill: 8-bar Pachelbel-Canon ground modified so the bass touches all 7 scale degrees: I-V-vi-iii-IV-ii-vii°-V (Eb-Bb-Cm-Gm-Ab-Fm-D°-Bb). Bars 7-8 replace the original I-V cadence with vii°-V to introduce the leading tone.
+M: C|
+L: 1/8
+Q: 1/2=84
+%%scale 0.6
+%%nowrap true
+%%score {1 | 2}
+V:1 clef=treble
+V:2 clef=bass
+K: Eb
+[V:1 name=""] "E♭"z8 | "B♭"z8 | "Cm"z8 | "Gm"z8 | "A♭"z8 | "Fm"z8 | "D°"z8 | "B♭"z8 |
+[V:2 name="LH00"] E,,8 | B,,8 | C,,8 | G,,8 | A,,8 | F,,8 | D,,8 | B,,8 |
+[V:1 name="RH01"] "E♭"g8 | "B♭"f8 | "Cm"e8 | "Gm"d8 | "A♭"c8 | "Fm"A8 | "D°"f8 | "B♭"d8 |
+[V:2 name="LH00"] E,,8 | B,,8 | C,,8 | G,,8 | A,,8 | F,,8 | D,,8 | B,,8 |
+[V:1 name="RH02"] "E♭"[eg]8 | "B♭"[df]8 | "Cm"[ce]8 | "Gm"[Bd]8 | "A♭"[Ac]8 | "Fm"[FA]8 | "D°"[Af]8 | "B♭"[Fd]8 |
+[V:2 name="LH00"] E,,8 | B,,8 | C,,8 | G,,8 | A,,8 | F,,8 | D,,8 | B,,8 |
+[V:1 name="RH03"] "E♭"[Eeg]4 [Geg]4 | "B♭"[Bdf]4 [Adf]4 | "Cm"[Gce]4 [Ece]4 | "Gm"[GBd]4 [FBd]4 | "A♭"[EAc]4 [CAc]4 | "Fm"[CFA]4 [A,FA]4 | "D°"[Adf]4 [Acf]4 | "B♭"[FBd]4 [FAd]4 |
+[V:2 name="LH00"] E,,8 | B,,8 | C,,8 | G,,8 | A,,8 | F,,8 | D,,8 | B,,8 |
+[V:1 name="RH04"] "E♭"[EGe]4 [EGe]4 | "B♭"[FBd]4 [Ad]4 | "Cm"[Gce]4 [Ecg]4 | "Gm"[GBb]4 [FB]4 | "A♭"[EAc]4 [CA]4 | "Fm"[CFA]4 [A,F]4 | "D°"[Adg]4 [Acg]2 [Acf]2 | "B♭"[FBe]4 [FAe]2 [FAd]2 |
+[V:2 name="LH01"] [E,,E,]8 | [B,,B,]8 | [C,,C,]8 | [G,,G,]8 | [A,,A,]8 | [F,,F,]8 | [D,D]8 | [B,,B,]8 |
+[V:1 name="RH05"] "E♭"[EGe]2 [EGd]2 [EGe]2 [EG]2 | "B♭"[DFB]2 [FB]2 [FAd]2 [GAd]2 | "Cm"[EGe]2 [Ge]2 [Edg]2 [Ecg]2 | "Gm"[Gdb]2 [Ggb]2 [FBb]2 [FBc']2 | "A♭"[Eca]2 [Ecg]2 [CAf]2 [CAa]2 | "Fm"[CAf]2 [CAe]2 [A,Fd]2 [A,Ff]2 | "D°"[Adg]2 [cdg]2 [Bcg]2 [Acf]2 | "B♭"[FBe]2 [ABe]2 [GAe]2 [FAd]2 |
+[V:2 name="LH02"] E,,2 B,,2 E,4 | B,,2 F,2 B,4 | C,,2 G,,2 C,4 | G,,2 D,2 G,4 | A,,2 E,2 A,4 | F,,2 C,2 F,4 | D,2 A,2 D4 | B,,2 F,2 B,4 |
+[V:1 name="RH06"] "E♭"[EGe]2 [FGd]2 [EGe]2 [EA]2 | "B♭"[DFB]2 [FB]2 [FBd]2 [GAd]2 | "Cm"[EGe]2 [ce]2 [Bdg]2 [Acg]2 | "Gm"[Bdb]2 [Agb]2 [GBb]2 [FBc']2 | "A♭"[Eca]2 [Ccg]2 [Acf]2 [Ada]2 | "Fm"[CAf]2 [A,Ae]2 [FAd]2 [FBf]2 | "D°"[Adg]2 [ceg]2 [Bdg]2 [Acf]2 | "B♭"[FBe]2 [Ace]2 [GBe]2 [FAd]2 |
+[V:2 name="LH03"] [E,,B,,G,]8 | [B,,F,D]8 | [C,,G,,E,]8 | [G,,D,B,]8 | [A,,E,C]8 | [F,,C,A,]8 | [D,A,F]8 | [B,,F,D]8 |
+[V:1 name="RH07"] "E♭"[EGe]2 [FGd]2 [Geg]2 [EAg]2 | "B♭"[DBf]2 [FBf]2 [FBf]2 [GAf]2 | "Cm"[EG]2 [ce]2 [Bde]2 [Ace]2 | "Gm"[Bdg]2 [Ag]2 [Ggb]2 [Fgc']2 | "A♭"[Eac']2 [Cgc']2 [cfc']2 [dac']2 | "Fm"[Cfa]2 [A,ea]2 [Ada]2 [Bfa]2 | "D°"[Adf']2 [cef']2 [Bdf']2 [Acf']2 | "B♭"[FBd']2 [Acd']2 [GBd']2 [FAd']2 |
+[V:2 name="LH04"] E,,2 B,,2 G,4 | B,,2 F,2 D4 | C,,2 G,,2 E,4 | G,,2 D,2 B,4 | A,,2 E,2 C4 | F,,2 C,2 A,4 | D,2 A,2 F4 | B,,2 F,2 D4 |
+[V:1 name="RH08"] "E♭"[EGe']2 [FGe']2 [Geg]2 [Aeg]2 | "B♭"[Bdf]2 [Fdf]2 [Bdf]2 [Adf]2 | "Cm"G2 c2 [Bce]2 [Ace]2 | "Gm"[Beg]2 [Aeg]2 [Geg]2 [Feg]2 | "A♭"[Eec']2 [Cec']2 [cec']2 [dec']2 | "Fm"[Cca]2 [A,ca]2 [Aca]2 [Bca]2 | "D°"[daf']2 [eaf']2 [dd'f']2 [cd'f']2 | "B♭"[Bfd']2 [cfd']2 [Bbd']2 [Abd']2 |
+[V:2 name="LH05"] E,,2 B,,2 G,2 z2 | B,,2 F,2 D2 z2 | C,,2 G,,2 E,2 z2 | G,,2 D,2 B,2 z2 | A,,2 E,2 C2 z2 | F,,2 C,2 A,2 z2 | D,2 A,2 F2 z2 | B,,2 F,2 D2 z2 |
+[V:1 name="RH09"] "E♭"[Gbe']2 [Gge'][Gae'] [egb]2 [eg][ega] | "B♭"[dfb][Bdf] [cdf][df] [def][df] [dfg][dfa] | "Cm"g2 ef [ceg]2 [Gce][Ace] | "Gm"[Beg][ceg] [Beg][Aeg] [Beg][Geg] [Aeg][Beg] | "A♭"[Aec']2 [cec'][Bec'] [Aec']2 [Gec'][Fec'] | "Fm"[Fca]2 [Aca][Gca] [Fca]2 [Eca][Dca] | "D°"[daf'][eaf'] [faf'][gaf'] [ad'f'][bd'f'] [c'd'f'][d'f'] | "B♭"[Bfd'][cfd'] [dfd'][efd'] [fbd'][gbd'] [abd'][bd'] |
+[V:2 name="LH06"] E,,B,, G,B,, E,,B,, G,B,, | B,,F, DF, B,,F, DF, | C,,G,, E,G,, C,,G,, E,G,, | G,,D, B,D, G,,D, B,D, | A,,E, CE, A,,E, CE, | F,,C, A,C, F,,C, A,C, | D,A, FA, D,A, FA, | B,,F, DF, B,,F, DF, |
+[V:1 name="RH10"] "E♭"[gbe']2 [ege'][fae'] [egb]2 [efg][ea] | "B♭"[dfb][Bd] [cde][df] [deg][df] [deg][da] | "Cm"[eg]2 [ce][df] [ceg]2 [EGc][FAc] | "Gm"[GBe][Ace] [GBe][FAe] [GBe][Ge] [Ade][Be] | "A♭"[Ace]2 [ce][Bde] [Ace]2 [GBe][FAe] | "Fm"[FAc]2 [Ac][GBc] [FAc]2 [EGc][DFc] | "D°"[dfa][ega] [fa][ga] [fad'][gbd'] [ec'd'][fd'] | "B♭"[Bdf][cef] [df][ef] [dfb][egb] [cab][db] |
+[V:2 name="LH07"] E,,2 z [E,,G,,B,,][E,,G,,B,,] z [E,,G,,B,,]2 | B,,2 z [B,,D,F,][B,,D,F,] z [B,,D,F,]2 | C,,2 z [C,,E,,G,,][C,,E,,G,,] z [C,,E,,G,,]2 | G,,2 z [G,,B,,D,][G,,B,,D,] z [G,,B,,D,]2 | A,,2 z [A,,C,E,][A,,C,E,] z [A,,C,E,]2 | F,,2 z [F,,A,,C,][F,,A,,C,] z [F,,A,,C,]2 | D,2 z [D,F,A,][D,F,A,] z [D,F,A,]2 | B,,2 z [B,,D,F,][B,,D,F,] z [B,,D,F,]2 |
+[V:1 name="RH11"] "E♭"[egb]2 [eg][efa] [gb]2 [fg][ea] | "B♭"[dfb][Bd] [cde][df] [eg]f [eg][da] | "Cm"[ceg]2 [ce][cdf] [eg]2 [EG][FA] | "Gm"[GBe][Ace] [GBe][FAe] [GB][Ge] [Ad][Be] | "A♭"[EAc]2 [Ece][EBd] [Ac]2 [GB][FA] | "Fm"[CFA]2 [CAc][CGB] [FA]2 [EG][DF] | "D°"[Adf][Aeg] [Afa][Ag] [fa][gb] [ec'][fd'] | "B♭"[FBd][Fce] [Fdf][Fe] [df][eg] [ca][db] |
+[V:2 name="LH08"] E,,3 E, B,,2 B,,2 | B,,3 B, F,2 F,2 | C,,3 C, G,,2 G,,2 | G,,3 G, D,2 D,2 | A,,3 A, E,2 E,2 | F,,3 F, C,2 C,2 | D,3 D A,2 A,2 | B,,3 B, F,2 F,2 |
+[V:1 name="RH12"] "E♭"[eg]2 e[ef] [Bg]2 [Bf][Be] | "B♭"[df]d [de][df] [Bg][Bf] [Be][Bd] | "Cm"[ce]2 c[cd] [Ge]2 [EG][FG] | "Gm"[Ge][Ae] [Ge][Fe] [GB][Be] [Bd][Be] | "A♭"[Ec]2 [Ee][Ed] [Ac]2 [AB]A | "Fm"[CA]2 [Cc][CB] [FA]2 [FG]F | "D°"[Af][Ag] [Aa][Ag] [fa][ga] [ea][fa] | "B♭"[Fd][Fe] [Ff][Fe] [df][ef] [cf][df] |
+[V:2 name="LH09"] E,,3 B,, G,2 B,,2 | B,,3 F, D2 F,2 | C,,3 G,, E,2 G,,2 | G,,3 D, B,2 D,2 | A,,3 E, C2 E,2 | F,,3 C, A,2 C,2 | D,3 A, F2 A,2 | B,,3 F, D2 F,2 |
+[V:1 name="RH13"] "E♭"[eg]2 [Ge]2 [AB]2 [GB]2 | "B♭"[Fd]2 [df]2 [Bg]2 [Bf]2 | "Cm"[ce]2 [Gc]2 [EG]2 [Gc]2 | "Gm"[Be]2 [B,e]2 [A,B]2 [B,B]2 | "A♭"[CE]2 [Ec]2 [Ad]2 [Ac]2 | "Fm"[A,C]2 [CA]2 [FB]2 [FA]2 | "D°"[Af]2 [FA]2 [Ea]2 [Fa]2 | "B♭"[Fd]2 [DF]2 [Cf]2 [Df]2 |
+[V:2 name="LH10"] E,,3 G, B,,2 B,,2 | B,,3 D F,2 F,2 | C,,3 E, G,,2 G,,2 | G,,3 B, D,2 D,2 | A,,3 C E,2 E,2 | F,,3 A, C,2 C,2 | D,3 F A,2 A,2 | B,,3 D F,2 F,2 |
+[V:1 name="RH14"] "E♭"[Eg]2 [Ge]2 [ABf]2 [GBe]2 | "B♭"[Fd]2 [Df]2 [EBg]2 [DBf]2 | "Cm"[Ce]2 [Gc]2 [EGB]2 [Gc]2 | "Gm"[Bd]2 [B,D]2 [A,GB]2 [B,FB]2 | "A♭"[CE]2 [ce]2 [Adf]2 [Aca]2 | "Fm"[A,C]2 [Ac]2 [FBd]2 [FAf]2 | "D°"[fa]2 [Fd]2 [Eca]2 [Fda]2 | "B♭"[df]2 [DB]2 [CAf]2 [DBf]2 |
+[V:2 name="LH11"] E,,2 [E,,G,,B,,F,]2 [E,,G,,B,,F,]2 z2 | B,,2 [B,,D,F,C]2 [B,,D,F,C]2 z2 | C,,2 [C,,E,,G,,D,]2 [C,,E,,G,,D,]2 z2 | G,,2 [G,,B,,D,A,]2 [G,,B,,D,A,]2 z2 | A,,2 [A,,C,E,B,]2 [A,,C,E,B,]2 z2 | F,,2 [F,,A,,C,G,]2 [F,,A,,C,G,]2 z2 | D,2 [D,F,A,E]2 [D,F,A,E]2 z2 | B,,2 [B,,D,F,C]2 [B,,D,F,C]2 z2 |
+[V:1 name="RH15"] "E♭"[EGg]2 [GBe]2 [ABf]2 [GBe]2 | "B♭"[FBd]2 [DBf]2 [EBg]2 [DBf]2 | "Cm"[CGe]2 [Gc]2 [EGB]2 [Gc]2 | "Gm"[GBd]2 [B,DG]2 [A,GB]2 [B,FB]2 | "A♭"[CEA]2 [Ace]2 [Adf]2 [cea]2 | "Fm"[A,CF]2 [FAc]2 [FBd]2 [Acf]2 | "D°"[dfa]2 [Fd]2 [Eca]2 [Fdf]2 | "B♭"[Bdf]2 [DB]2 [CAf]2 [DBd]2 |
+[V:2 name="LH12"] E,,2 B,,2 E,,2 B,,2 | B,,2 F,2 B,,2 F,2 | C,,2 G,,2 C,,2 G,,2 | G,,2 D,2 G,,2 D,2 | A,,2 E,2 A,,2 E,2 | F,,2 C,2 F,,2 C,2 | D,2 A,2 D,2 A,2 | B,,2 F,2 B,,2 F,2 |
+[V:1 name="RH16"] "E♭"[EGB]2 [Beg]2 [Bfg]2 [Beg]2 | "B♭"[Bdf]2 [DBf]2 [EBf]2 [DBf]2 | "Cm"[CGe]2 [Gce]2 [GBe]2 [Gce]2 | "Gm"[Gdb]2 [DGb]2 [GBb]2 [FBb]2 | "A♭"[EAc']2 [Aec']2 [Afc']2 [eac']2 | "Fm"[CFa]2 [Fca]2 [Fda]2 [cfa]2 | "D°"[daf']2 [df]2 [cfa]2 [df]2 | "B♭"[Bfd']2 [Bd]2 [Adf]2 [Bd]2 |
+[V:2 name="LH13"] E,,B,, E,,B,, E,,B,, E,,B,, | B,,F, B,,F, B,,F, B,,F, | C,,G,, C,,G,, C,,G,, C,,G,, | G,,D, G,,D, G,,D, G,,D, | A,,E, A,,E, A,,E, A,,E, | F,,C, F,,C, F,,C, F,,C, | D,A, D,A, D,A, D,A, | B,,F, B,,F, B,,F, B,,F, |
+[V:1 name="RH17"] "E♭"[GBe]2 [EBg][FBg] [GBg]2 [EBg]2 | "B♭"[DBf]2 [Bdf][Bef] [Bf]2 [Bdf]2 | "Cm"[Gce]2 [CGe][DGe] [EGe]2 [CGe]2 | "Gm"[DGb]2 [GBb][GAb] [GBb]2 [FBb]2 | "A♭"[EAc']2 [Ac'][GAc'] [FAc']2 [Aec']2 | "Fm"[CFa]2 [Fa][EFa] [DFa]2 [Fca]2 | "D°"[Adf']2 [df][cdf] [Bfa]2 [Af]2 | "B♭"[FBd']2 [Bd][ABd] [Gdf]2 [Fd]2 |
+[V:2 name="LH14"] E,,3 [E,,G,,B,,][E,,G,,B,,] [E,,G,,B,,]3 | B,,3 [B,,D,F,][B,,D,F,] [B,,D,F,]3 | C,,3 [C,,E,,G,,][C,,E,,G,,] [C,,E,,G,,]3 | G,,3 [G,,B,,D,][G,,B,,D,] [G,,B,,D,]3 | A,,3 [A,,C,E,][A,,C,E,] [A,,C,E,]3 | F,,3 [F,,A,,C,][F,,A,,C,] [F,,A,,C,]3 | D,3 [D,F,A,][D,F,A,] [D,F,A,]3 | B,,3 [B,,D,F,][B,,D,F,] [B,,D,F,]3 |
+[V:1 name="RH18"] "E♭"[GBe]2 [Eeg][Fdg] [Geg]2 [EGg]2 | "B♭"[DBf]2 [Bdf][cef] [df]2 [Bdf]2 | "Cm"[Gce]2 [Ce][Def] [Eeg]2 [Ce]2 | "Gm"[Dgb]2 [Bgb][Afb] [Geb]2 [Fdb]2 | "A♭"[Ecc']2 [Acc'][GBc'] [Fcc']2 [Adc']2 | "Fm"[CAa]2 [FAa][EGa] [DAa]2 [FBa]2 | "D°"[Adf']2 [Adf][Acf] [Bdf]2 [Adf]2 | "B♭"[FBd']2 [FBd][FAd] [GBd]2 [FBd]2 |
+[V:2 name="LH15"] E,,2 [E,,G,,B,,]2 E,,2 [E,,G,,B,,]2 | B,,2 [B,,D,F,]2 B,,2 [B,,D,F,]2 | C,,2 [C,,E,,G,,]2 C,,2 [C,,E,,G,,]2 | G,,2 [G,,B,,D,]2 G,,2 [G,,B,,D,]2 | A,,2 [A,,C,E,]2 A,,2 [A,,C,E,]2 | F,,2 [F,,A,,C,]2 F,,2 [F,,A,,C,]2 | D,2 [D,F,A,]2 D,2 [D,F,A,]2 | B,,2 [B,,D,F,]2 B,,2 [B,,D,F,]2 |
+[V:1 name="RH19"] "E♭"[GBe]2 [EBe][FBd] [GBe]2 [EGB]2 | "B♭"[DB]2 [Bd][Bce] [Bdf]2 [Bd]2 | "Cm"[EGc]2 [CEe][DEf] [Eg]2 [CEe]2 | "Gm"[DEg]2 [EBg][EAf] [GBe]2 [FBd]2 | "A♭"[EAc]2 [Ac][GAB] [FAc]2 [Ad]2 | "Fm"[CFA]2 [FA][EFG] [DFA]2 [FB]2 | "D°"[GAd]2 [GAd][GAc] [GBd]2 [FAd]2 | "B♭"[EFB]2 [EFB][EFA] [EGB]2 [DFB]2 |
+[V:2 name="LH16"] E,,3 [E,,G,,B,,] E,,3 [E,,G,,B,,] | B,,3 [B,,D,F,] B,,3 [B,,D,F,] | C,,3 [C,,E,,G,,] C,,3 [C,,E,,G,,] | G,,3 [G,,B,,D,] G,,3 [G,,B,,D,] | A,,3 [A,,C,E,] A,,3 [A,,C,E,] | F,,3 [F,,A,,C,] F,,3 [F,,A,,C,] | D,3 [D,F,A,] D,3 [D,F,A,] | B,,3 [B,,D,F,] B,,3 [B,,D,F,] |
+[V:1 name="RH20"] "E♭"[EGB]2 [EBe][EBd] [Be]2 [GBe]2 | "B♭"[Bd]2 [Bd][Bcd] [Bd]2 [Bd]2 | "Cm"[EGc]2 [Ece][Ecf] [Ecg]2 [Ece]2 | "Gm"[EBg]2 [EBg][EBf] [Be]2 [Bd]2 | "A♭"[EAc]2 [EAc][EAB] [EAc]2 [FAd]2 | "Fm"[CFA]2 [CFA][CFG] [CFA]2 [DFB]2 | "D°"[GAd]2 [GA]2 [GAd]2 [FAd]2 | "B♭"[EFB]2 [EF]2 [EFB]2 [DFB]2 |
+[V:2 name="LH17"] E,,2 [E,,G,,B,,]2 [E,,G,,B,,]2 z2 | B,,2 [B,,D,F,]2 [B,,D,F,]2 z2 | C,,2 [C,,E,,G,,]2 [C,,E,,G,,]2 z2 | G,,2 [G,,B,,D,]2 [G,,B,,D,]2 z2 | A,,2 [A,,C,E,]2 [A,,C,E,]2 z2 | F,,2 [F,,A,,C,]2 [F,,A,,C,]2 z2 | D,2 [D,F,A,]2 [D,F,A,]2 z2 | B,,2 [B,,D,F,]2 [B,,D,F,]2 z2 |
+[V:1 name="RH21"] "E♭"[EGB]4 [GBe]2 [Beg]2 | "B♭"[Bdg]2 [Bda]2 [Bdg]2 [Bdf]2 | "Cm"[Ece]6 [Ece]2 | "Gm"[EBe]2 [EBf]2 [Be]2 [Bd]2 | "A♭"[EAc]6 [FAc]2 | "Fm"[CFA]6 [DFA]2 | "D°"[GAd]6 [FAd]2 | "B♭"[EFB]6 [DFB]2 |
+[V:2 name="LH18"] E,,2 [E,,G,,B,,F,]2 [E,,G,,B,,F,]2 z2 | B,,2 [B,,D,F,C]2 [B,,D,F,C]2 z2 | C,,2 [C,,E,,G,,D,]2 [C,,E,,G,,D,]2 z2 | G,,2 [G,,B,,D,A,]2 [G,,B,,D,A,]2 z2 | A,,2 [A,,C,E,B,]2 [A,,C,E,B,]2 z2 | F,,2 [F,,A,,C,G,]2 [F,,A,,C,G,]2 z2 | D,2 [D,F,A,E]2 [D,F,A,E]2 z2 | B,,2 [B,,D,F,C]2 [B,,D,F,C]2 z2 |
+[V:1 name="RH22"] "E♭"[EGB]4 [GBe]2 [egb]2 | "B♭"[dgb]2 [dac']2 [dgb]2 [dfa]2 | "Cm"[ceg]6 [ceg]2 | "Gm"[Beg]2 [Bfa]2 [Beg]2 [Bdf]2 | "A♭"[Ece]2 [Ecd]2 [Ec]2 [Fcd]2 | "Fm"[CAc]2 [CAB]2 [CA]2 [DAB]2 | "D°"[Adf]6 [Adf]2 | "B♭"[FBd]6 [FBd]2 |
+[V:2 name="LH19"] E,,2 [E,,G,,B,,D,]2 [E,,G,,B,,D,]2 z2 | B,,2 [B,,D,F,A,]2 [B,,D,F,A,]2 z2 | C,,2 [C,,E,,G,,B,]2 [C,,E,,G,,B,]2 z2 | G,,2 [G,,B,,D,F,]2 [G,,B,,D,F,]2 z2 | A,,2 [A,,C,E,G,]2 [A,,C,E,G,]2 z2 | F,,2 [F,,A,,C,E,]2 [F,,A,,C,E,]2 z2 | D,2 [D,F,A,C]2 [D,F,A,C]2 z2 | B,,2 [B,,D,F,A,]2 [B,,D,F,A,]2 z2 |
+[V:1 name="RH23"] "E♭"[GBe]4 [GBe]2 [egb]2 | "B♭"[egb]2 [eac']2 [dgb]2 [dfa]2 | "Cm"[deg]4 [ceg]2 [ceg]2 | "Gm"[ceg]2 [cfa]2 [Beg]2 [Bdf]2 | "A♭"[Bce]2 [Bcd]2 [Ac]2 [Acd]2 | "Fm"[GAc]2 [GAB]2 [FA]2 [FAB]2 | "D°"[Adf]6 [Adf]2 | "B♭"[FBd]6 [FBd]2 |
+[V:2 name="LH20"] E,,F,,G,,A,,B,,C,D,E, | B,,C,D,E,F,G,A,B, | C,,D,,E,,F,,G,,A,,B,,C, | G,,A,,B,,C,D,E,F,G, | A,,B,,C,D,E,F,G,A, | F,,G,,A,,B,,C,D,E,F, | D,E,F,G,A,B,CD | B,,C,D,E,F,G,A,B, |
+[V:1 name="RH24"] "E♭"[GBe]4 [Beg]2 [egb]2 | "B♭"[egb]2 [egc']2 [dfb]2 [dfa]2 | "Cm"[deg]4 [cge']2 [cge']2 | "Gm"[cge']2 [cae']2 [Bgd']2 [Bfd']2 | "A♭"[Bec']2 [Bdc']2 [Acc']2 [Adc']2 | "Fm"[Gca]2 [GBa]2 [FAa]2 [FBa]2 | "D°"[Afd']6 [Afd']2 | "B♭"[Fdb]6 [Fdb]2 |
+[V:2 name="LH21"] E,,F,,G,,A,,B,,A,,G,,F,, | B,,C,D,E,F,E,D,C, | C,,D,,E,,F,,G,,F,,E,,D,, | G,,A,,B,,C,D,C,B,,A,, | A,,B,,C,D,E,D,C,B,, | F,,G,,A,,B,,C,B,,A,,G,, | D,E,F,G,A,G,F,E, | B,,C,D,E,F,E,D,C, |
+[V:1 name="RH25"] "E♭"[Geb]4 [egb]4 | "B♭"[Beg]4 [Bdf]2 [Adf]2 | "Cm"[Gde]4 [Gce']4 | "Gm"[cge']4 [Bgd']2 [Bfd']2 | "A♭"[Bec']4 [Aec']4 | "Fm"[Gca]4 [Fca]4 | "D°"[Afd']8 | "B♭"[Fdb]8 |
+[V:2 name="LH22"] E,,G,,F,,A,,G,,B,,A,,C, | B,,D,C,E,D,F,E,G, | C,,E,,D,,F,,E,,G,,F,,A,, | G,,B,,A,,C,B,,D,C,E, | A,,C,B,,D,C,E,D,F, | F,,A,,G,,B,,A,,C,B,,D, | D,F,E,G,F,A,G,B, | B,,D,C,E,D,F,E,G, |
+[V:1 name="RH26"] "E♭"[Geb]4 [Egb]4 | "B♭"[DBg]4 [Bdf]2 [Adf]2 | "Cm"[Gce]4 [CGe']4 | "Gm"[B,ge']4 [Bgd']2 [Bfd']2 | "A♭"[Aec']4 [eac']4 | "Fm"[Fca]4 [cfa]4 | "D°"[Afd']4 [fad']4 | "B♭"[Fdb]4 [dfb]4 |
+[V:2 name="LH23"] E,,C,F,,D,G,,E,A,,F, | B,,G,C,A,D,B,E,C | C,,A,,D,,B,,E,,C,F,,D, | G,,E,A,,F,B,,G,C,A, | A,,F,B,,G,C,A,D,B, | F,,D,G,,E,A,,F,B,,G, | D,B,E,CF,DG,E | B,,G,C,A,D,B,E,C |
+[V:1 name="RH27"] "E♭"[egb]4 [EGb]4 | "B♭"[DFB]4 [Bdf]2 [Adf]2 | "Cm"[Gce]4 [CEG]4 | "Gm"[B,Dg]4 [Bdg]2 [Bdf]2 | "A♭"[Ace]4 [eac']4 | "Fm"[FAc]4 [cfa]4 | "D°"[Adf]4 [dfa]4 | "B♭"[FBd]4 [Bdf]4 |
+[V:2 name="LH24"] (3BGE (3B,G,E, (3B,,G,,E,, (3G,,B,,E, | (3F,D,B,, (3D,F,B, (3DB,F, (3B,DF | (3GEC (3G,E,C, (3G,,E,,C,, (3E,,G,,C, | (3D,B,,G,, (3B,,D,G, (3DB,G, (3G,D,B,, | (3A,,C,E, (3A,CE (3ECA, (3CEA | (3F,,A,,C, (3F,A,C (3CA,F, (3A,CF | (3F,A,D (3DFA (3AFD (3FAd | (3D,F,B, (3B,DF (3FDB, (3DFB |
+[V:1 name="RH28"] "E♭"[Beg]4 [EGB]4 | "B♭"[DF]4 [df]4 | "Cm"[ce]4 [CE]4 | "Gm"[B,D]4 [Bd]4 | "A♭"[Ac]4 [ac']4 | "Fm"[FA]4 [fa]4 | "D°"[Ad]4 [da]4 | "B♭"[FB]4 [Bf]4 |
+[V:2 name="LH28"] [B,,E,G,]2 [EGB]2 [G,,B,,E,]2 [Beg]2 | [B,,D,F,]2 [DFB]2 [F,B,D]2 [dfb]2 | [C,,E,,G,,]2 [Gce]2 [E,,G,,C,]2 [CEG]2 | [G,,B,,D,]2 [DGB]2 [B,,D,G,]2 [GBd]2 | [E,A,C]2 [Ace]2 [EAc]2 [c'e'a']2 | [C,F,A,]2 [FAc]2 [CFA]2 [ac'f']2 | [F,A,D]2 [Adf]2 [D,F,A,]2 [fad']2 | [D,F,B,]2 [FBd]2 [B,,D,F,]2 [dfb]2 |
+[V:1 name="RH29"] "E♭"[Bg]4 [GB]4 | "B♭"F4 f4 | "Cm"e4 E4 | "Gm"D4 d4 | "A♭"c4 c'4 | "Fm"A4 a4 | "D°"d4 d4 | "B♭"B4 B4 |
+[V:2 name="LH29"] [E,,G,,B,,D,]2 [GBde]2 [B,,D,E,G,]2 [DEGB]2 | [D,F,A,B,]2 [Bdfa]2 [A,B,DF]2 [fabd']2 | [G,,B,,C,E,]2 [Bceg]2 [C,,E,,G,,B,]2 [EGBc]2 | [F,,G,,B,,D,]2 [DFGB]2 [B,,D,F,G,]2 [GBdf]2 | [A,CEG]2 [EGAc]2 [Gcea]2 [c'e'g'a']2 | [F,A,CE]2 [CEFA]2 [EAcf]2 [ac'e'f']2 | [C,D,F,A,]2 [FAcd]2 [D,F,A,C]2 [Acdf]2 | [A,,B,,D,F,]2 [DFAB]2 [B,,D,F,A,]2 [FABd]2 |
+[V:1 name="RH30"] "E♭"B8 | z8 |]
+[V:2 name="LH30"] "^enharmonic pedal: lower E lever (Eb→D)"C,,/4D,,/4E,,/4F,,/4G,,/4A,,/4B,,/4C,/4D,/4E,/4F,/4G,/4A,/4B,/4C/4D/4E/4F/4G/4A/4B/4c/4d/4e/4f/4g/4a/4 z z/4 | g'/8f'/8e'/8d'/8c'/8b/8a/8g/8f/8e/8d/8c/8B/8A/8G/8F/8E/8D/8C/8B,/8A,/8G,/8F,/8E,/8D,/8C,/8B,,/8A,,/8G,,/8F,,/8E,,/8D,,/8 z4 |

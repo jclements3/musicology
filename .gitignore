@@ -14,3 +14,4 @@ package-lock.json
 # os/editor cruft
 .DS_Store
 *.swp
+*:Zone.Identifier
