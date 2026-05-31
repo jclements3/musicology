@@ -18,7 +18,42 @@ different numerals as the key changes.
 > the harp (it was promoted from the old `web/harp.html`). If you see piano
 > references lingering (see TODOs), they're leftovers.
 
-## Latest session — left strip with a clefless C2–G7 staff
+## Latest session — Koch-style shape gating (gray out all but 2 until proficient)
+
+The trainer now starts the learner with only **2 of the 9 hand-shapes unlocked**
+and earns the rest one at a time, Koch-method style (small alphabet, full tempo,
+widen the set as recognition becomes automatic — never slow the chord itself).
+All logic is in `web/harp.js`; the gray-out styling is in `web/index.html`.
+
+- **State:** `progress.unlocked` (persisted in the `progress` object / localStorage
+  `rnt_harp_v1`, default **2**; `Reset` clears it back to 2 since `blank()` sets it).
+- **Order:** `UNLOCK_ORDER = ['33','333','34','43','332','323','233','44','444']`.
+  `activeShapes()` = the first `unlocked` of that list. Start pair = `33` (root
+  triad) + `333` (root 7th) — distinguishable by note count.
+- **Unlock gate (`checkUnlock()`, called from `answer()`):** the next shape
+  unlocks once **every** currently-active shape has **≥10 attempts**
+  (`UNLOCK_MIN`) AND the active set's combined accuracy is **≥90%** (`UNLOCK_ACC`),
+  using the existing cumulative `progress.mastery[shape] = {seen, correct}`. The
+  newly-unlocked shape starts at 0 attempts so the gate re-arms automatically.
+- **Quizzing:** `newQuestion()` now picks from `quizShapes()` = the unlocked set
+  narrowed by the Triads/7ths/Quartal checkboxes (falls back to the full unlocked
+  set if the checkboxes would empty it). Locked shapes are **never** the lit chord.
+- **Matrix gray-out:** `buildChoices()` adds class `locked` + `disabled` to every
+  cell whose shape isn't active. `.ans.locked` (in index.html) is a dim diagonal
+  hatch, `cursor:not-allowed`, no hover. The correct cell is always in an active
+  row, so locked never collides with the green/red highlight.
+- **Feedback:** a "🔓 New shape unlocked: …" banner is appended to `#reveal` on the
+  answer that crosses the gate (delay stretched to ≥2.8s to read it), and a
+  **Shapes N/9** HUD tile (`#shapes`, updated in `updateHud()`) shows progress.
+
+> Verified on the tablet: default state shows exactly rows `33` and `333` active,
+> the other 7 hatched/disabled, HUD "Shapes 2/9", and exercises only land on the
+> active shapes. The *unlock transition* is logic- and syntax-verified but not
+> exercised on-device (needs ≥90% over ≥10 attempts on each active shape).
+> The modal/function "second pass" relabeling layer from the fuller pedagogy
+> spec was intentionally **not** built — only the shape-gating was requested.
+
+## Previous session — left strip with a clefless C2–G7 staff
 
 The brand title ("Harp Shape-Chords") was **removed** from the top bar to free
 horizontal room, and a **160px left strip** was added as a third `main` grid

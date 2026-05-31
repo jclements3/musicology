@@ -88,6 +88,10 @@
     .ans:hover:not(:disabled){background:#ffe9a8;}
     .ans.correct{background:var(--green)!important;color:#fff;}
     .ans.wrong{background:var(--red)!important;color:#fff;}
+    /* locked (not-yet-unlocked) shape rows: grayed out + unclickable (Koch gating) */
+    .ans.locked{background:repeating-linear-gradient(135deg,#e9e5db,#e9e5db 6px,#e1dcd0 6px,#e1dcd0 12px)!important;
+      color:#bdb6a6!important;cursor:not-allowed;opacity:.6;}
+    .ans.locked:hover{background:#e9e5db!important;}
     /* bold only the Roman-numeral letters, not the quality/figure qualifiers */
     .num{font-weight:700;}
     /* stacked figured bass: 6-over-4 etc. (your .fig) */
@@ -157,6 +161,7 @@
     #reveal{position:absolute;left:8px;right:8px;bottom:120px;z-index:3;pointer-events:none;
       text-align:center;font-size:14px;color:#e9dcc0;}
     #reveal b{color:var(--gold);} .muted{color:#b9a47e;}
+    #reveal .unlock{color:#ffe1a0;font-weight:700;margin-top:3px;}
     .feedback:not(:empty),#reveal:not(:empty){background:rgba(31,22,13,0.92);
       border:1px solid #4a3a26;border-radius:9px;padding:6px 12px;}
 
@@ -203,6 +208,7 @@
         <div class="it"><span class="lab">Acc</span><span class="val" id="acc">–</span></div>
         <div class="it"><span class="lab">Done</span><span class="val" id="answered">0</span></div>
         <div class="it"><span class="lab">Best</span><span class="val" id="best">0</span></div>
+        <div class="it"><span class="lab">Shapes</span><span class="val" id="shapes">2/9</span></div>
       </div>
       <button class="iconbtn" id="play" title="Play the lit chord">▶ Play</button>
       <button class="iconbtn gold" id="skip" title="Next exercise">Skip / Next</button>

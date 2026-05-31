@@ -160,7 +160,7 @@
 
   // ---------------- progress / metrics ----------------
   const STORE = 'rnt_harp_v1';
-  const blank = () => ({ answered: 0, correct: 0, score: 0, xp: 0, bestStreak: 0, mastery: {}, updated: 0 });
+  const blank = () => ({ answered: 0, correct: 0, score: 0, xp: 0, bestStreak: 0, mastery: {}, unlocked: 2, updated: 0 });
   let progress = load();
   function load() {
     try { const r = localStorage.getItem(STORE); if (r) return Object.assign(blank(), JSON.parse(r)); } catch (e) {}
@@ -193,10 +193,48 @@
     return s.length ? s : SHAPE_GROUPS.triads;
   }
 
+  // ---- Koch-style progression: gray out all but the unlocked shapes ----------
+  // The 9 hand-shapes are the "alphabet". The learner starts with 2 unlocked and
+  // earns the rest one at a time (in UNLOCK_ORDER): a new shape unlocks once every
+  // currently-active shape has >= UNLOCK_MIN attempts AND the active set's overall
+  // accuracy is >= UNLOCK_ACC. Locked shapes show grayed-out in the matrix and are
+  // never quizzed. Drill stays at full tempo -- only the *set* widens (Koch), not
+  // the chord speed.
+  const UNLOCK_ORDER = ['33', '333', '34', '43', '332', '323', '233', '44', '444'];
+  const UNLOCK_ACC = 0.90, UNLOCK_MIN = 10;
+  function activeShapes() {
+    const n = Math.max(2, Math.min(UNLOCK_ORDER.length, progress.unlocked || 2));
+    return UNLOCK_ORDER.slice(0, n);
+  }
+  // shapes actually quizzed = unlocked set narrowed by the group checkboxes
+  // (falls back to the full unlocked set if the checkboxes would empty it).
+  function quizShapes() {
+    const act = activeShapes();
+    const inter = enabledShapes().filter((s) => act.includes(s));
+    return inter.length ? inter : act;
+  }
+  // If this answer crossed the proficiency gate, bump the unlock count and return
+  // the newly-unlocked shape label; otherwise null. The new shape starts at 0
+  // attempts, so the gate naturally re-arms before the next unlock.
+  function checkUnlock() {
+    if ((progress.unlocked || 2) >= UNLOCK_ORDER.length) return null;
+    let seen = 0, corr = 0;
+    for (const s of activeShapes()) {
+      const m = progress.mastery[s] || { seen: 0, correct: 0 };
+      if (m.seen < UNLOCK_MIN) return null;
+      seen += m.seen; corr += m.correct;
+    }
+    if (seen && corr / seen >= UNLOCK_ACC) {
+      progress.unlocked = (progress.unlocked || 2) + 1;
+      return UNLOCK_ORDER[progress.unlocked - 1];
+    }
+    return null;
+  }
+
   function newQuestion() {
     const keyName = settings.key === 'random' ? pick(KEY_ORDER) : settings.key;
     const scale = parseScale(keyName);
-    const shapes = enabledShapes();
+    const shapes = quizShapes();
     let notes = null, shape = null, bassDeg = 0, guard = 0;
     while (!notes && guard++ < 40) {
       shape = pick(shapes);
@@ -549,14 +587,17 @@
     table.className = 'matrix';
     table.style.gridTemplateColumns = 'repeat(7, 1fr)';
 
+    const act = activeShapes();
     rows.forEach((shape, ri) => {
+      const locked = !act.includes(shape);   // not yet unlocked -> grayed, unclickable
       for (let d = 0; d < 7; d++) {
         const b = document.createElement('button');
-        b.className = 'ans' + (ri % 2 ? ' odd' : '');   // alternating row stripe
+        b.className = 'ans' + (ri % 2 ? ' odd' : '') + (locked ? ' locked' : '');
         b.innerHTML = romanHTML(ROMAN[shape][d]);
         b.dataset.shape = shape;
         b.dataset.deg = String(d);
-        b.onclick = () => answer(shape, d, b, correctShape, correctDeg);
+        if (locked) b.disabled = true;
+        else b.onclick = () => answer(shape, d, b, correctShape, correctDeg);
         table.appendChild(b);
       }
     });
@@ -602,6 +643,13 @@
       '</b> · bass degree <b>' + (current.bassDeg + 1) + '</b> · <b>' + romanHTML(current.answer) + '</b> = ' + cn +
       ' &nbsp;<span class="muted">(' + current.notes.map((x) => fix(x.letter + x.acc) + x.octave).join(' ') + ')</span>';
 
+    // Koch unlock: did this answer cross the proficiency gate for the active set?
+    const unlockedShape = checkUnlock();
+    if (unlockedShape) {
+      $('reveal').innerHTML += '<div class="unlock">🔓 New shape unlocked: <b>' + unlockedShape +
+        '</b> &middot; ' + SHAPE_KIND[unlockedShape] + ' &nbsp;(' + activeShapes().length + '/9)</div>';
+    }
+
     save();
     updateHud();
 
@@ -614,6 +662,7 @@
       showHintPanel(settings.sound);
       delay = settings.sound ? (current.notes.length + 1) * 760 + 2000 : 3200;
     }
+    if (unlockedShape) delay = Math.max(delay, 2800);   // hold so the unlock is readable
     setTimeout(newQuestion, delay);
   }
 
@@ -627,6 +676,7 @@
     $('acc').textContent = progress.answered ? Math.round(progress.correct / progress.answered * 100) + '%' : '–';
     $('best').textContent = progress.bestStreak;
     $('answered').textContent = progress.answered;
+    const sh = $('shapes'); if (sh) sh.textContent = activeShapes().length + '/9';
   }
 
   // ---------------- wiring ----------------
