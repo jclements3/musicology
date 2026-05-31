@@ -291,6 +291,16 @@
     updateHud();
   }
 
+  // Never let a render error freeze the drill: if newQuestion throws while
+  // building the next exercise, log it and retry once with a fresh random pick.
+  function nextQuestion() {
+    try { newQuestion(); }
+    catch (e) {
+      if (window.console) console.error('newQuestion failed; retrying', e);
+      try { newQuestion(); } catch (e2) { if (window.console) console.error('newQuestion retry failed', e2); }
+    }
+  }
+
   // Scaffolded hint tied to PER-SHAPE mastery: the more correct answers you've
   // logged for the lit chord's shape, the less the hint gives away — and it
   // disappears once that shape is mastered. Each shape weans off independently,
@@ -714,7 +724,7 @@
       delay = settings.sound ? (current.notes.length + 1) * 760 + 2000 : 3200;
     }
     if (unlockedCell) delay = Math.max(delay, 2800);   // hold so the unlock is readable
-    setTimeout(newQuestion, delay);
+    setTimeout(nextQuestion, delay);
   }
 
   function flash(msg, ok) { const f = $('feedback'); f.textContent = msg; f.className = 'feedback ' + (ok ? 'ok' : 'bad'); }
@@ -740,7 +750,7 @@
     [['optTri', 'triads'], ['optSev', 'sevenths'], ['optQ', 'quartal'], ['optNames', 'names'], ['optSound', 'sound']]
       .forEach(([id, k]) => { const el = $(id); if (!el) return; el.checked = settings[k]; el.onchange = () => { settings[k] = el.checked; newQuestion(); }; });
 
-    $('skip').onclick = newQuestion;
+    $('skip').onclick = nextQuestion;
     $('play').onclick = () => { if (current && window.Audio2) window.Audio2.playChord(current.notes.map(midiOf)); };
     // Hint strip: tapping the prompt reveals the hint in place + sings the cue;
     // once revealed, the ↻ button replays the cue (strip height never changes).
