@@ -18,6 +18,46 @@ different numerals as the key changes.
 > the harp (it was promoted from the old `web/harp.html`). If you see piano
 > references lingering (see TODOs), they're leftovers.
 
+## Latest session (2026-05-31) — ii-V-I "altered dominant" licks (RH) + Somerset LH
+
+New notation asset, parallel to `romanescaEb/` (engraved ABC/PDF, **not yet wired
+into the web app**). Lives in **`licks/`**.
+
+**What it is:** the 15 Jens Larsen ii-V-I "altered dominant" guitar licks from
+`15-II-V-I-licks-Altered-Dominants.pdf` (source PDF + DOCX now committed at repo
+root), arranged for harp as a **grand staff** — the lick in the **right hand**, a
+**Somerset left-hand pattern** underneath.
+
+**The Somerset LH:** the `V:2` / `LHxx` voices in `romanescaEb/romanescaEb.abc`
+are a progressive left-hand pattern library (root, octave, root-fifth-octave,
+block triad, broken fifths, arpeggio, …) — originally written under Canon-in-D
+violins over an E♭ Pachelbel ground. Here the violins are dropped and only the LH
+patterns are kept, **re-voiced onto Dm7 → G7alt → Cmaj7** (ii-V-I in C). Each lick
+gets one pattern (cycling LH00, LH01, …, named in each tune title); the last bar
+lands on a held Cmaj7.
+
+**Files / pipeline (mirrors `romanescaEb/`):**
+- `licks/rh01-15.png` — extracted TAB image of each lick.
+- `licks/generate_licks.py` — **source of truth.** MIDI→ABC + LH-pattern generator.
+  The 15 RH transcriptions live in the `LICKS` list (MIDI, written treble pitch:
+  bar1 = 8 eighths Dm7, bar2 = 8 eighths G7alt, bar3 = whole-note Cmaj7). LH
+  patterns + chord pools in `PATTERNS` / `DM,G7,CM`.
+- `licks/print_licks_pdf.py` — `abcm2ps` + `ps2pdf` → `licks.pdf`.
+- `licks/licks.abc`, `licks/licks.pdf` — generated output (committed).
+- Regenerate: `cd licks && python3 generate_licks.py && python3 print_licks_pdf.py`.
+
+**Transcription caveat:** no OCR was available, so RH pitches were read by eye from
+the low-res TAB crops and **validated bar-by-bar against the chord scales**
+(D-dorian / G-altered / C-major) — almost all 15 validated cleanly. Still
+**verify against the source PDF.** Soft spots noted in `licks/README.md`: Lick 5
+bar 1 (middle 3 notes could be a string higher), Lick 11 bar 1 (wide/fourths,
+opens on low F2), and a few V-bars passing through a C-natural over G7alt (kept as
+chromatic passing tones).
+
+**Not done / next:** these are standalone notation (like `romanescaEb`); they are
+**not** surfaced in the harp-trainer web app. If you want them in-app, that's new
+work. `harp-singing-drill.html` at repo root is unrelated WIP, left untracked.
+
 ## Latest session — sung-solfa HINT feature + bottom-bar redesign
 
 A tap-to-sing **Hint** was added and the chrome was reflowed to give the chord
