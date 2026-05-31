@@ -265,17 +265,39 @@
     return null;
   }
 
+  // Spaced-repetition: bias selection toward WEAK chords (low accuracy) and
+  // freshly-unlocked ones, so practice concentrates where it's needed while
+  // mastered chords still recur for review (never dropped).
+  function cellWeight(shape, deg) {
+    const m = progress.cells[cellKey(shape, deg)] || { seen: 0, correct: 0 };
+    if (m.seen === 0) return 5;            // just unlocked / never tried -> drill it
+    const acc = m.correct / m.seen;
+    return 1 + (1 - acc) * 4;              // mastered ~1x weight, never-right ~5x
+  }
+  let lastCellKey = null;                  // so the same chord never repeats back-to-back
+  function chooseCell() {
+    let cells = quizCells();
+    if (cells.length > 1 && lastCellKey) {
+      const f = cells.filter((c) => cellKey(c[0], c[1]) !== lastCellKey);
+      if (f.length) cells = f;
+    }
+    const w = cells.map((c) => cellWeight(c[0], c[1]));
+    let r = Math.random() * w.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < cells.length; i++) { r -= w[i]; if (r <= 0) return cells[i]; }
+    return cells[cells.length - 1];
+  }
+
   function newQuestion() {
     const keyName = settings.key === 'random' ? pick(KEY_ORDER) : settings.key;
     const scale = parseScale(keyName);
-    const cells = quizCells();
     let notes = null, shape = null, bassDeg = 0, guard = 0;
     while (!notes && guard++ < 60) {
-      const c = pick(cells);
+      const c = chooseCell();   // spaced-repetition weighted pick
       shape = c[0]; bassDeg = c[1];
       notes = chordStrings(scale, bassDeg, shape);
     }
     if (!notes) { shape = '33'; bassDeg = 0; notes = chordStrings(scale, 0, '33'); }
+    lastCellKey = cellKey(shape, bassDeg);
     const answer = ROMAN[shape][bassDeg];
     current = { keyName, scale, shape, bassDeg, notes, answer, answered: false };
     session.t0 = performance.now();
