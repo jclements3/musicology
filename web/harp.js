@@ -128,6 +128,44 @@
     return m.off === 0 ? name : name + '/' + fix(scale[bassDeg].letter + scale[bassDeg].acc);
   }
 
+  // Long-winded spoken chord name, matching web/CHORD-GLOSSARY.md. Built from the
+  // chord's ROOT degree (bass degree minus the shape's inversion offset), its
+  // quality, and its inversion -- so it reads exactly like the glossary entry.
+  const CARD = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
+  const ORD = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
+  const FUNC = ['tonic', 'supertonic', 'mediant', 'subdominant', 'dominant', 'submediant', 'leading tone'];
+  const TRIQ = ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'];
+  const SEVQ = ['major seventh', 'minor seventh', 'minor seventh', 'major seventh',
+    'dominant seventh', 'minor seventh', 'half-diminished seventh'];
+  // [position word, bass chord-tone, figured-bass nickname] for the inverted shapes
+  const INV = {
+    '34': ['first', 'third', 'six'], '43': ['second', 'fifth', 'six-four'],
+    '332': ['first', 'third', 'six-five'], '323': ['second', 'fifth', 'four-three'],
+    '233': ['third', 'seventh', 'four-two'],
+  };
+  function spokenName(shape, bassDeg) {
+    const m = META[shape];
+    const rootDeg = ((bassDeg - m.off) % 7 + 7) % 7;
+    const num = CARD[rootDeg], ord = ORD[rootDeg], fn = FUNC[rootDeg];
+    if (m.kind === 'quartal') {
+      return shape === '44'
+        ? 'the ' + num + ' quartal chord, a quartal triad (a stack of two perfect fourths) rooted on the ' + ord + ' scale degree (the ' + fn + ').'
+        : 'the ' + num + ' quartal seventh, a quartal seventh chord (a stack of three perfect fourths) rooted on the ' + ord + ' scale degree (the ' + fn + ').';
+    }
+    const isSev = m.kind === 'sev';
+    const qual = isSev ? SEVQ[rootDeg] : TRIQ[rootDeg];
+    const noun = isSev ? ' chord' : ' triad';
+    if (m.off === 0) {   // root position
+      return isSev
+        ? 'the ' + num + ' chord, a root-position ' + qual + ' chord built on the ' + ord + ' scale degree (the ' + fn + '); this is the seven chord.'
+        : 'the ' + num + ' chord, a root-position ' + qual + ' triad built on the ' + ord + ' scale degree (the ' + fn + ').';
+    }
+    const iv = INV[shape];   // an inversion
+    return 'the ' + num + ' chord in ' + iv[0] + ' inversion, a ' + qual + noun +
+      ' built on the ' + ord + ' scale degree (the ' + fn + '), with its ' + iv[1] +
+      ' in the bass; this is the ' + iv[2] + ' chord.';
+  }
+
   const ALL_ROMANS = (() => {
     const set = new Set();
     Object.values(ROMAN).forEach((row) => row.forEach((r) => set.add(r)));
@@ -179,7 +217,39 @@
 
   // ---------------- state ----------------
   const session = { streak: 0, t0: 0 };
-  const settings = { key: 'random', triads: true, sevenths: true, quartal: true, names: true, sound: true };
+  // All tunable training knobs live here; the gear-icon Settings panel edits
+  // them and they persist to localStorage. Defaults reproduce the original
+  // hard-coded behaviour exactly, so nothing changes until the user moves a
+  // control. The five topbar checkboxes (triads/7ths/quartal/names/sound) and
+  // the key selector write into this same object.
+  const SET_STORE = 'rnt_harp_settings_v1';
+  const SETTINGS_DEFAULTS = {
+    key: 'random', triads: true, sevenths: true, quartal: true, names: true, sound: true,
+    // pacing & feedback
+    delayCorrect: 950,      // ms to hold a correct answer before advancing
+    delayWrong: 3200,       // ms floor to hold a wrong answer (extended for the sung cue)
+    autoHint: true,         // auto-open the hint panel on a wrong answer
+    // curriculum (Koch unlocking)
+    curriculum: true,       // false = free play, every chord unlocked
+    unlockAcc: 0.90,        // combined accuracy across the active set needed to unlock
+    unlockMin: 10,          // min attempts per active cell before a new one unlocks
+    // spaced repetition weighting
+    weakBias: 4,            // accuracy term multiplier (0 = ignore weakness)
+    staleBias: 1.5,         // staleness term multiplier (0 = ignore staleness)
+    newBias: 6,             // selection weight of a freshly-unlocked / never-tried cell
+    noRepeat: true,         // forbid the same chord twice in a row
+    // display & hints
+    staff: true,            // show the left-strip notation staff
+    hintReps: 10,           // correct answers for a shape until its scaffold hint fades (0 = always on)
+  };
+  const settings = Object.assign({}, SETTINGS_DEFAULTS);
+  function loadSettings() {
+    try { const r = localStorage.getItem(SET_STORE); if (r) Object.assign(settings, JSON.parse(r)); } catch (e) {}
+  }
+  function saveSettings() {
+    try { localStorage.setItem(SET_STORE, JSON.stringify(settings)); } catch (e) {}
+  }
+  loadSettings();
   let current = null;
 
   const pick = (a) => a[Math.floor(Math.random() * a.length)];
@@ -229,13 +299,13 @@
     ...weaveTier('43', '323'),          // 2nd inversion
     ...roundRobin(D7.map((d) => ['233', d]), DT.map((d) => ['44', d]), D7.map((d) => ['444', d])),
   ];                                    // hardest tier: 3rd-inv 7ths woven with quartals
-  const UNLOCK_ACC = 0.90, UNLOCK_MIN = 10;
   const cellKey = (shape, deg) => shape + ':' + deg;
   // the movable-do solfa sequence (bottom->top) for a (shape,degree) cell
   function solfaSeqOf(shape, bassDeg) {
     return shapeSteps(shape).map((off) => SOLFA[(bassDeg + off) % 7]).join('-');
   }
   function activeCells() {
+    if (!settings.curriculum) return SOLFA_CURRICULUM;   // free play: everything unlocked
     const n = Math.max(2, Math.min(SOLFA_CURRICULUM.length, progress.unlocked || 2));
     return SOLFA_CURRICULUM.slice(0, n);
   }
@@ -251,14 +321,15 @@
   // return its [shape,deg]; otherwise null. The new cell starts at 0 attempts, so
   // the gate naturally re-arms before the next unlock.
   function checkUnlock() {
+    if (!settings.curriculum) return null;               // free play: nothing to unlock
     if ((progress.unlocked || 2) >= SOLFA_CURRICULUM.length) return null;
     let seen = 0, corr = 0;
     for (const [sh, d] of activeCells()) {
       const m = progress.cells[cellKey(sh, d)] || { seen: 0, correct: 0 };
-      if (m.seen < UNLOCK_MIN) return null;
+      if (m.seen < settings.unlockMin) return null;
       seen += m.seen; corr += m.correct;
     }
-    if (seen && corr / seen >= UNLOCK_ACC) {
+    if (seen && corr / seen >= settings.unlockAcc) {
       progress.unlocked = (progress.unlocked || 2) + 1;
       return SOLFA_CURRICULUM[progress.unlocked - 1];
     }
@@ -270,19 +341,19 @@
   // concentrates where it's needed while mastered chords still recur for review.
   function cellWeight(shape, deg) {
     const m = progress.cells[cellKey(shape, deg)] || { seen: 0, correct: 0, last: 0 };
-    if (m.seen === 0) return 6;            // just unlocked / never tried -> top priority
-    // accuracy term: mastered ~1x weight, never-right ~5x
-    let w = 1 + (1 - m.correct / m.seen) * 4;
+    if (m.seen === 0) return settings.newBias;   // just unlocked / never tried -> top priority
+    // accuracy term: mastered ~1x weight, never-right ~ (1+weakBias)x
+    let w = 1 + (1 - m.correct / m.seen) * settings.weakBias;
     // staleness term: how overdue this chord is vs. the average (set-size) interval.
-    // overdue 1 = seen about as recently as average; >1 adds up to +4.5.
+    // overdue 1 = seen about as recently as average; >1 adds up to +3*staleBias.
     const n = activeCells().length;
     const overdue = n ? ((progress.tick || 0) - (m.last || 0)) / n : 0;
-    return w + Math.min(Math.max(overdue - 1, 0), 3) * 1.5;
+    return w + Math.min(Math.max(overdue - 1, 0), 3) * settings.staleBias;
   }
   let lastCellKey = null;                  // so the same chord never repeats back-to-back
   function chooseCell() {
     let cells = quizCells();
-    if (cells.length > 1 && lastCellKey) {
+    if (settings.noRepeat && cells.length > 1 && lastCellKey) {
       const f = cells.filter((c) => cellKey(c[0], c[1]) !== lastCellKey);
       if (f.length) cells = f;
     }
@@ -340,16 +411,20 @@
   const SHAPE_KIND = { '33': 'root-position triad', '34': '1st-inversion triad', '43': '2nd-inversion triad',
     '44': 'quartal triad', '333': 'root-position 7th', '332': '1st-inversion 7th',
     '323': '2nd-inversion 7th', '233': '3rd-inversion 7th', '444': 'quartal 7th' };
-  // Correct-answer thresholds for this shape: <3 full · <6 medium · <10 light · ≥10 none.
-  const HINT_FULL = 3, HINT_MED = 6, HINT_NONE = 10;
+  // Correct-answer thresholds for this shape, scaled off settings.hintReps
+  // (HINT_NONE): below 30% of it the full hint, below 60% medium, then light,
+  // then none. hintReps = 0 turns the scaffold off entirely (always blank).
   function showHint() {
     const el = $('hint');
     if (!el) return;   // scaffolded text hint removed -- replaced by the big Hint button
     if (!current) { el.className = ''; el.innerHTML = ''; return; }
     const c = current;
+    const HINT_NONE = settings.hintReps;
+    const HINT_FULL = Math.max(1, Math.round(HINT_NONE * 0.3));
+    const HINT_MED = Math.max(HINT_FULL + 1, Math.round(HINT_NONE * 0.6));
     const m = progress.mastery[c.shape] || { seen: 0, correct: 0 };
     const got = m.correct;
-    if (got >= HINT_NONE) { el.className = ''; el.innerHTML = ''; return; }
+    if (HINT_NONE <= 0 || got >= HINT_NONE) { el.className = ''; el.innerHTML = ''; return; }
 
     const bassNote = fix(c.scale[c.bassDeg].letter + c.scale[c.bassDeg].acc);
     const bassStr = c.notes[0];
@@ -529,7 +604,7 @@
 
   function drawStaff(notes, scale, keyName) {
     const svg = $('staffSvg');
-    if (!svg) return;
+    if (!svg || !settings.staff) return;   // staff hidden -> nothing to draw
     svg.setAttribute('viewBox', '0 0 ' + ST_W + ' ' + ST_H);
     const L = 8, R = ST_W - 8;
     const hline = (sidx, x1, x2) =>
@@ -734,6 +809,11 @@
       '</b> · bass degree <b>' + (current.bassDeg + 1) + '</b> · <b>' + romanHTML(current.answer) + '</b> = ' + cn +
       ' &nbsp;<span class="muted">(' + current.notes.map((x) => fix(x.letter + x.acc) + x.octave).join(' ') + ')</span>';
 
+    // On a correct guess, also spell out the full glossary verbal name to read.
+    if (ok) {
+      $('reveal').innerHTML += '<div class="spoken">' + spokenName(current.shape, current.bassDeg) + '</div>';
+    }
+
     // Koch unlock: did this answer cross the proficiency gate for the active set?
     const unlockedCell = checkUnlock();
     if (unlockedCell) {
@@ -746,14 +826,17 @@
     save();
     updateHud();
 
-    let delay = 950;
+    let delay = settings.delayCorrect;
     if (ok) {
+      delay += 1000;   // +1s to read the spoken glossary name on a correct guess
       if (settings.sound && window.Audio2) window.Audio2.playChord(current.notes.map(midiOf));
     } else {
-      // Got it wrong: auto-open the Hint (formula + solfa) and sing the cue
-      // (silent if Sound is off). Hold long enough to hear it / read the hint.
-      showHintPanel(settings.sound);
-      delay = settings.sound ? (current.notes.length + 1) * 760 + 2000 : 3200;
+      // Got it wrong: optionally auto-open the Hint (formula + solfa) and sing the
+      // cue (silent if Sound is off). Hold long enough to hear it / read the hint.
+      if (settings.autoHint) showHintPanel(settings.sound);
+      delay = settings.sound
+        ? Math.max(settings.delayWrong, (current.notes.length + 1) * 760 + 2000)
+        : settings.delayWrong;
     }
     if (unlockedCell) delay = Math.max(delay, 2800);   // hold so the unlock is readable
     setTimeout(nextQuestion, delay);
@@ -772,18 +855,138 @@
     const sh = $('shapes'); if (sh) sh.textContent = activeCells().length + '/' + SOLFA_CURRICULUM.length;
   }
 
+  // ---------------- settings panel (gear icon) ----------------
+  // Schema-driven so "a whole bunch of things" is one list to extend. Each row
+  // reads/writes settings[key]; ranges show a live value, toggles are switches,
+  // and the curriculum group carries unlock buttons.
+  const pct = (v) => Math.round(v * 100) + '%';
+  const secs = (v) => (v / 1000).toFixed(2).replace(/0$/, '') + 's';
+  const SETTINGS_SCHEMA = [
+    { group: 'Pacing & feedback', rows: [
+      { key: 'delayCorrect', label: 'Hold a correct answer', type: 'range', min: 300, max: 3000, step: 50, fmt: secs },
+      { key: 'delayWrong', label: 'Hold a wrong answer', type: 'range', min: 1500, max: 6000, step: 100, fmt: secs,
+        note: 'With Sound on, extended to fit the sung cue.' },
+      { key: 'autoHint', label: 'Auto-open hint when wrong', type: 'toggle' },
+    ] },
+    { group: 'Curriculum — Koch unlocking', rows: [
+      { key: 'curriculum', label: 'Lock chords until mastered', type: 'toggle',
+        note: 'Off = free play: every chord active, nothing grayed.' },
+      { key: 'unlockAcc', label: 'Mastery accuracy to unlock', type: 'range', min: 0.7, max: 1, step: 0.01, fmt: pct },
+      { key: 'unlockMin', label: 'Min reps before unlock', type: 'range', min: 5, max: 30, step: 1, fmt: (v) => v + ' reps' },
+      { type: 'unlock' },
+    ] },
+    { group: 'Spaced repetition', rows: [
+      { key: 'weakBias', label: 'Weak-chord emphasis', type: 'range', min: 0, max: 8, step: 0.5, fmt: (v) => v.toFixed(1) + '×' },
+      { key: 'staleBias', label: 'Staleness emphasis', type: 'range', min: 0, max: 5, step: 0.25, fmt: (v) => v.toFixed(2) + '×' },
+      { key: 'newBias', label: 'New-chord priority', type: 'range', min: 1, max: 12, step: 0.5, fmt: (v) => v.toFixed(1) },
+      { key: 'noRepeat', label: 'Avoid back-to-back repeats', type: 'toggle' },
+    ] },
+    { group: 'Display & hints', rows: [
+      { key: 'staff', label: 'Show notation staff (left strip)', type: 'toggle' },
+      { key: 'hintReps', label: 'Reps until scaffold hint fades', type: 'range', min: 0, max: 20, step: 1,
+        fmt: (v) => (v <= 0 ? 'always on' : v + ' reps') },
+    ] },
+  ];
+
+  // Re-render whatever a setting change affects (cheap; runs only on a change).
+  function applySettings() {
+    document.body.classList.toggle('no-staff', !settings.staff);
+    saveSettings();
+    if (current) {
+      buildChoices(current.shape, current.bassDeg);
+      drawStaff(current.notes, current.scale, current.keyName);
+      drawHarp(current.notes);
+    }
+    updateHud();
+  }
+
+  function buildSettings() {
+    const body = $('setBody');
+    if (!body) return;
+    body.innerHTML = '';
+    SETTINGS_SCHEMA.forEach((sec) => {
+      const g = document.createElement('div'); g.className = 'set-group';
+      const h = document.createElement('div'); h.className = 'set-gtitle'; h.textContent = sec.group;
+      g.appendChild(h);
+      sec.rows.forEach((row) => g.appendChild(buildSetRow(row)));
+      body.appendChild(g);
+    });
+  }
+
+  function buildSetRow(row) {
+    const el = document.createElement('div'); el.className = 'set-row';
+    if (row.type === 'unlock') {
+      el.classList.add('set-unlock');
+      const info = document.createElement('div'); info.className = 'set-unlock-info';
+      const refresh = () => { info.textContent = 'Unlocked ' + Math.min(progress.unlocked || 2, SOLFA_CURRICULUM.length) +
+        ' of ' + SOLFA_CURRICULUM.length + ' solfa chords'; };
+      refresh();
+      const btns = document.createElement('div'); btns.className = 'set-unlock-btns';
+      const mk = (txt, fn) => { const b = document.createElement('button'); b.className = 'set-mini'; b.textContent = txt;
+        b.onclick = () => { fn(); refresh(); applySettings(); }; return b; };
+      btns.appendChild(mk('Unlock next', () => { progress.unlocked = Math.min(SOLFA_CURRICULUM.length, (progress.unlocked || 2) + 1); save(); }));
+      btns.appendChild(mk('Unlock all', () => { progress.unlocked = SOLFA_CURRICULUM.length; save(); }));
+      btns.appendChild(mk('Reset to 2', () => { progress.unlocked = 2; save(); }));
+      el.appendChild(info); el.appendChild(btns);
+      return el;
+    }
+    const lab = document.createElement('div'); lab.className = 'set-lab';
+    lab.innerHTML = '<span>' + row.label + '</span>' + (row.note ? '<small>' + row.note + '</small>' : '');
+    el.appendChild(lab);
+    const ctl = document.createElement('div'); ctl.className = 'set-ctl';
+    if (row.type === 'toggle') {
+      const sw = document.createElement('label'); sw.className = 'switch';
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!settings[row.key];
+      const kn = document.createElement('span'); kn.className = 'knob';
+      cb.onchange = () => { settings[row.key] = cb.checked; applySettings(); };
+      sw.appendChild(cb); sw.appendChild(kn); ctl.appendChild(sw);
+    } else if (row.type === 'range') {
+      const rng = document.createElement('input'); rng.type = 'range';
+      rng.min = row.min; rng.max = row.max; rng.step = row.step; rng.value = settings[row.key];
+      const out = document.createElement('span'); out.className = 'set-val'; out.textContent = row.fmt(settings[row.key]);
+      rng.oninput = () => { const v = parseFloat(rng.value); settings[row.key] = v; out.textContent = row.fmt(v); applySettings(); };
+      ctl.appendChild(rng); ctl.appendChild(out);
+    }
+    el.appendChild(ctl);
+    return el;
+  }
+
+  function openSettings() { buildSettings(); const o = $('setOverlay'); if (o) o.hidden = false; }
+  function closeSettings() { const o = $('setOverlay'); if (o) o.hidden = true; }
+  function restoreDefaults() {
+    Object.assign(settings, SETTINGS_DEFAULTS);
+    // keep the user's current key + filter checkboxes as-is on the topbar
+    syncTopbar();
+    applySettings();
+    buildSettings();
+  }
+  // Push settings values back onto the topbar checkboxes/select (after a reset).
+  function syncTopbar() {
+    [['optTri', 'triads'], ['optSev', 'sevenths'], ['optQ', 'quartal'], ['optNames', 'names'], ['optSound', 'sound']]
+      .forEach(([id, k]) => { const el = $(id); if (el) el.checked = settings[k]; });
+    const sel = $('keySel'); if (sel) sel.value = settings.key;
+  }
+
   // ---------------- wiring ----------------
   function wire() {
     const sel = $('keySel');
     KEY_ORDER.forEach((k) => { const o = document.createElement('option'); o.value = k; o.textContent = fix(k) + ' major'; sel.appendChild(o); });
-    sel.value = 'random';
-    sel.onchange = () => { settings.key = sel.value; newQuestion(); };
+    sel.value = settings.key;
+    sel.onchange = () => { settings.key = sel.value; saveSettings(); newQuestion(); };
 
     [['optTri', 'triads'], ['optSev', 'sevenths'], ['optQ', 'quartal'], ['optNames', 'names'], ['optSound', 'sound']]
-      .forEach(([id, k]) => { const el = $(id); if (!el) return; el.checked = settings[k]; el.onchange = () => { settings[k] = el.checked; newQuestion(); }; });
+      .forEach(([id, k]) => { const el = $(id); if (!el) return; el.checked = settings[k]; el.onchange = () => { settings[k] = el.checked; saveSettings(); newQuestion(); }; });
 
     $('skip').onclick = nextQuestion;
     $('play').onclick = () => { if (current && window.Audio2) window.Audio2.playChord(current.notes.map(midiOf)); };
+
+    // gear icon -> training settings panel
+    document.body.classList.toggle('no-staff', !settings.staff);
+    const gear = $('gear'); if (gear) gear.onclick = openSettings;
+    const sx = $('setClose'); if (sx) sx.onclick = closeSettings;
+    const sd = $('setDone'); if (sd) sd.onclick = closeSettings;
+    const sdef = $('setDefaults'); if (sdef) sdef.onclick = restoreDefaults;
+    const sov = $('setOverlay'); if (sov) sov.onclick = (e) => { if (e.target === sov) closeSettings(); };
     // Hint strip: tapping the prompt reveals the hint in place + sings the cue;
     // once revealed, the ↻ button replays the cue (strip height never changes).
     $('hintBtn').onclick = showHintPanel;
