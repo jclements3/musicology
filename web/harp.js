@@ -227,6 +227,7 @@
     key: 'random', triads: true, sevenths: true, quartal: true, names: true, sound: true,
     // pacing & feedback
     delayCorrect: 950,      // ms to hold a correct answer before advancing
+    readCorrect: 5000,      // extra ms on a correct answer to read the spoken glossary name
     delayWrong: 3200,       // ms floor to hold a wrong answer (extended for the sung cue)
     autoHint: true,         // auto-open the hint panel on a wrong answer
     // curriculum (Koch unlocking)
@@ -828,7 +829,7 @@
 
     let delay = settings.delayCorrect;
     if (ok) {
-      delay += 1000;   // +1s to read the spoken glossary name on a correct guess
+      delay += settings.readCorrect;   // extra time to read the spoken glossary name on a correct guess
       if (settings.sound && window.Audio2) window.Audio2.playChord(current.notes.map(midiOf));
     } else {
       // Got it wrong: optionally auto-open the Hint (formula + solfa) and sing the
@@ -864,6 +865,8 @@
   const SETTINGS_SCHEMA = [
     { group: 'Pacing & feedback', rows: [
       { key: 'delayCorrect', label: 'Hold a correct answer', type: 'range', min: 300, max: 3000, step: 50, fmt: secs },
+      { key: 'readCorrect', label: 'Extra time to read the spoken name', type: 'range', min: 0, max: 10000, step: 250, fmt: secs,
+        note: 'Added on top of the hold above, on a correct answer.' },
       { key: 'delayWrong', label: 'Hold a wrong answer', type: 'range', min: 1500, max: 6000, step: 100, fmt: secs,
         note: 'With Sound on, extended to fit the sung cue.' },
       { key: 'autoHint', label: 'Auto-open hint when wrong', type: 'toggle' },
