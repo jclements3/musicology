@@ -1,0 +1,29 @@
+X: 1
+T: E♭ Shape Chords — stacked-whole-note drill (RH + LH)
+C: J. Clements III
+M: C
+L: 1/8
+%%scale 0.6
+%%nowrap true
+%%score {1 | 2}
+V:1 clef=treble
+V:2 clef=bass
+K: Eb
+[V:1 name="33  531"] "I"[EGB]8 | "ii"[FAc]8 | "iii"[GBd]8 | "IV"[Ace]8 | "V"[Bdf]8 | "vi"[ceg]8 | "vii°"[dfa]8 |
+[V:2 name=""] [E,,G,,B,,]8 | [F,,A,,C,]8 | [G,,B,,D,]8 | [A,,C,E,]8 | [B,,D,F,]8 | [C,E,G,]8 | [D,F,A,]8 |
+[V:1 name="34  853"] "vi⁶"[EGc]8 | "vii°⁶"[FAd]8 | "I⁶"[GBe]8 | "ii⁶"[Acf]8 | "iii⁶"[Bdg]8 | "IV⁶"[cea]8 | "V⁶"[dfb]8 |
+[V:2 name=""] [E,,G,,C,]8 | [F,,A,,D,]8 | [G,,B,,E,]8 | [A,,C,F,]8 | [B,,D,G,]8 | [C,E,A,]8 | [D,F,B,]8 |
+[V:1 name="43  A85"] "IV⁶⁄₄"[EAc]8 | "V⁶⁄₄"[FBd]8 | "vi⁶⁄₄"[Gce]8 | "vii°⁶⁄₄"[Adf]8 | "I⁶⁄₄"[Beg]8 | "ii⁶⁄₄"[cfa]8 | "iii⁶⁄₄"[dgb]8 |
+[V:2 name=""] [E,,A,,C,]8 | [F,,B,,D,]8 | [G,,C,E,]8 | [A,,D,F,]8 | [B,,E,G,]8 | [C,F,A,]8 | [D,G,B,]8 |
+[V:1 name="44  741"] "Iq"[EAd]8 | "iiq"[FBe]8 | "iiiq"[Gcf]8 | "IVq"[Adg]8 | "Vq"[Bea]8 | "viq"[cfb]8 | "viiq"[dgc']8 |
+[V:2 name=""] [E,,A,,D,]8 | [F,,B,,E,]8 | [G,,C,F,]8 | [A,,D,G,]8 | [B,,E,A,]8 | [C,F,B,]8 | [D,G,C]8 |
+[V:1 name="333  7531"] "IΔ"[EGBd]8 | "ii⁷"[FAce]8 | "iii⁷"[GBdf]8 | "IVΔ"[Aceg]8 | "V⁷"[Bdfa]8 | "vi⁷"[cegb]8 | "viiø⁷"[dfac']8 |
+[V:2 name=""] [E,,G,,B,,D,]8 | [F,,A,,C,E,]8 | [G,,B,,D,F,]8 | [A,,C,E,G,]8 | [B,,D,F,A,]8 | [C,E,G,B,]8 | [D,F,A,C]8 |
+[V:1 name="332  8753"] "vi⁶⁄₅"[EGBc]8 | "viiø⁶⁄₅"[FAcd]8 | "IΔ⁶⁄₅"[GBde]8 | "ii⁶⁄₅"[Acef]8 | "iii⁶⁄₅"[Bdfg]8 | "IVΔ⁶⁄₅"[cega]8 | "V⁶⁄₅"[dfab]8 |
+[V:2 name=""] [E,,G,,B,,C,]8 | [F,,A,,C,D,]8 | [G,,B,,D,E,]8 | [A,,C,E,F,]8 | [B,,D,F,G,]8 | [C,E,G,A,]8 | [D,F,A,B,]8 |
+[V:1 name="323  A875"] "IVΔ⁴⁄₃"[EGAc]8 | "V⁴⁄₃"[FABd]8 | "vi⁴⁄₃"[GBce]8 | "viiø⁴⁄₃"[Acdf]8 | "IΔ⁴⁄₃"[Bdeg]8 | "ii⁴⁄₃"[cefa]8 | "iii⁴⁄₃"[dfgb]8 |
+[V:2 name=""] [E,,G,,A,,C,]8 | [F,,A,,B,,D,]8 | [G,,B,,C,E,]8 | [A,,C,D,F,]8 | [B,,D,E,G,]8 | [C,E,F,A,]8 | [D,F,G,B,]8 |
+[V:1 name="233  CA87"] "ii⁴⁄₂"[EFAc]8 | "iii⁴⁄₂"[FGBd]8 | "IVΔ⁴⁄₂"[GAce]8 | "V⁴⁄₂"[ABdf]8 | "vi⁴⁄₂"[Bceg]8 | "viiø⁴⁄₂"[cdfa]8 | "IΔ⁴⁄₂"[degb]8 |
+[V:2 name=""] [E,,F,,A,,C,]8 | [F,,G,,B,,D,]8 | [G,,A,,C,E,]8 | [A,,B,,D,F,]8 | [B,,C,E,G,]8 | [C,D,F,A,]8 | [D,E,G,B,]8 |
+[V:1 name="444  A741"] "Iq4"[EAdg]8 | "iiq4"[FBea]8 | "iiiq4"[Gcfb]8 | "IVq4"[Adgc']8 | "Vq4"[Bead']8 | "viq4"[cfbe']8 | "viiq4"[dgc'f']8 |
+[V:2 name=""] [E,,A,,D,G,]8 | [F,,B,,E,A,]8 | [G,,C,F,B,]8 | [A,,D,G,C]8 | [B,,E,A,D]8 | [C,F,B,E]8 | [D,G,CF]8 |
